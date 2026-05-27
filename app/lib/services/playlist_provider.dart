@@ -25,7 +25,10 @@ class PlaylistProvider extends ChangeNotifier {
   Stream<PlayerState> get playerStateStream => _handler.player.playerStateStream;
 
   int getRating(String trackId) => _handler.getRating(trackId);
-  Future<void> rateTrack(String trackId, int rating) => _handler.rateTrack(trackId, rating);
+  Future<void> rateTrack(String trackId, int rating) async {
+    await _handler.rateTrack(trackId, rating);
+    notifyListeners();
+  }
 
   Future<void> loadCachedTracks() => _handler.loadCachedTracks();
   Future<void> loadRatings() => _handler.loadRatings();

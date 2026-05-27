@@ -78,6 +78,7 @@ class MusicHandler extends BaseAudioHandler with SeekHandler {
     rating = rating.clamp(0, 3);
     _ratings[trackId] = rating;
     await DatabaseService.setRating(trackId, rating);
+    if (_mode == PlaybackMode.shuffle) _rebuildShuffle();
     _notify();
   }
 
