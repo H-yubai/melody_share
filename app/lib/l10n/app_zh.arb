@@ -1,0 +1,86 @@
+{
+  "@@locale": "zh",
+  "homeScan": "扫描本地音乐",
+  "homeScanning": "正在扫描本地音乐...",
+  "homePermissionDenied": "存储权限被拒绝",
+  "homeRetry": "重试",
+  "homeEmptyTitle": "你的音乐之旅即将开始",
+  "homeEmptyDesc": "点击扫描按钮，发现设备上的本地音乐",
+  "homeScanButton": "扫描本地音乐",
+  "homeAllMusic": "全部音乐",
+  "unknownArtist": "未知艺术家",
+  "drawerSubtitle": "你的个人音乐播放器",
+  "drawerLocalMusic": "本地音乐",
+  "drawerLocalMusicSub": "扫描设备中的音乐文件",
+  "drawerUploadMusic": "上传音乐",
+  "drawerUploadMusicSub": "分享音乐到服务器",
+  "drawerDataManagement": "数据管理",
+  "drawerDataManagementSub": "管理你的音乐库",
+  "drawerMusicSharing": "音乐分享",
+  "drawerMusicSharingSub": "与好友分享音乐",
+  "drawerLightMode": "浅色模式",
+  "drawerDarkMode": "深色模式",
+  "drawerAbout": "关于",
+  "drawerLanguage": "语言",
+  "comingSoon": "{feature} —— 即将推出！",
+  "@comingSoon": {
+    "description": "未实现功能的占位提示",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "playerTitle": "播放器",
+  "playerNowPlaying": "正在播放",
+  "playerNoTrack": "未选择曲目",
+  "uploadTitle": "上传音乐",
+  "uploadComingSoon": "上传功能即将推出",
+  "homeMenu": "菜单",
+  "drawerPlaylists": "播放列表",
+  "drawerNoPlaylists": "暂无播放列表",
+  "homeAddToPlaylist": "添加到播放列表",
+  "homeAddedToGroup": "已添加到「{name}」",
+  "@homeAddedToGroup": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeNoPlaylists": "暂无播放列表，请在侧边栏创建",
+  "newPlaylist": "新建播放列表",
+  "playlistName": "播放列表名称",
+  "cancel": "取消",
+  "create": "创建",
+  "rename": "重命名",
+  "renamePlaylist": "重命名播放列表",
+  "delete": "删除",
+  "deletePlaylist": "删除播放列表",
+  "deleteConfirm": "确定要删除「{name}」及其所有曲目吗？",
+  "@deleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "playerQueue": "播放队列",
+  "playerTracksCount": "{count} 首曲目",
+  "@playerTracksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playerClear": "清空",
+  "playerQueueEmpty": "队列为空",
+  "groupPlayAll": "播放全部",
+  "groupEmpty": "分组为空",
+  "searchGroups": "搜索分组",
+  "sortByName": "按名称",
+  "sortByCount": "按数量",
+  "chinese": "中文",
+  "english": "English"
+}

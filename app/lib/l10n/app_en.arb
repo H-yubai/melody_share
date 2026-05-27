@@ -1,0 +1,89 @@
+{
+  "@@locale": "en",
+  "homeScan": "Scan local music",
+  "@homeScan": {
+    "description": "Tooltip for the scan button in app bar"
+  },
+  "homeScanning": "Scanning local music...",
+  "homePermissionDenied": "Storage permission denied",
+  "homeRetry": "Retry",
+  "homeEmptyTitle": "Your Music Awaits",
+  "homeEmptyDesc": "Tap the scan button to discover\nyour local music collection",
+  "homeScanButton": "Scan Local Music",
+  "homeAllMusic": "All Music",
+  "unknownArtist": "Unknown Artist",
+  "drawerSubtitle": "Your personal music player",
+  "drawerLocalMusic": "Local Music",
+  "drawerLocalMusicSub": "Scan device for music",
+  "drawerUploadMusic": "Upload Music",
+  "drawerUploadMusicSub": "Share music to server",
+  "drawerDataManagement": "Data Management",
+  "drawerDataManagementSub": "Manage your music library",
+  "drawerMusicSharing": "Music Sharing",
+  "drawerMusicSharingSub": "Share with friends",
+  "drawerLightMode": "Light Mode",
+  "drawerDarkMode": "Dark Mode",
+  "drawerAbout": "About",
+  "drawerLanguage": "Language",
+  "comingSoon": "{feature} \u2014 coming soon!",
+  "@comingSoon": {
+    "description": "Placeholder message for unimplemented features",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "playerTitle": "Player",
+  "playerNowPlaying": "Now Playing",
+  "playerNoTrack": "No track selected",
+  "uploadTitle": "Upload Music",
+  "uploadComingSoon": "Upload form coming soon",
+  "homeMenu": "Menu",
+  "drawerPlaylists": "Playlists",
+  "drawerNoPlaylists": "No playlists yet",
+  "homeAddToPlaylist": "Add to Playlist",
+  "homeAddedToGroup": "Added to \"{name}\"",
+  "@homeAddedToGroup": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeNoPlaylists": "No playlists yet. Create one from the sidebar.",
+  "newPlaylist": "New Playlist",
+  "playlistName": "Playlist name",
+  "cancel": "Cancel",
+  "create": "Create",
+  "rename": "Rename",
+  "renamePlaylist": "Rename Playlist",
+  "delete": "Delete",
+  "deletePlaylist": "Delete Playlist",
+  "deleteConfirm": "Delete \"{name}\" and all its tracks?",
+  "@deleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "playerQueue": "Play Queue",
+  "playerTracksCount": "{count} tracks",
+  "@playerTracksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playerClear": "Clear",
+  "playerQueueEmpty": "Queue is empty",
+  "groupPlayAll": "Play all",
+  "groupEmpty": "Group is empty",
+  "searchGroups": "Search groups",
+  "sortByName": "By name",
+  "sortByCount": "By count",
+  "chinese": "Chinese",
+  "english": "English"
+}
