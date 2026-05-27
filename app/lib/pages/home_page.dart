@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/group.dart';
 import '../models/local_track.dart';
+import '../services/animation_provider.dart';
 import '../services/database_service.dart';
 import '../services/group_provider.dart';
 import '../services/local_music_service.dart';
@@ -24,16 +27,38 @@ class _HomePageState extends State<HomePage> {
   int _scanCount = 0;
   String? _error;
   int? _selectedGroupId;
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+  Timer? _debounceTimer;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {
+          _searchQuery = value;
+        });
+      }
+    });
+  }
+
 
   Future<void> _startScan() => _runScan(isQuick: true);
 
   Future<void> _startFullScan() => _runScan(isQuick: false);
 
-  Future<void> _runScan({required bool isQuick}) async {
+  Future<void> _runScan({required bool isQuick, String? customPath}) async {
     if (_isScanning) return;
     setState(() {
       _isScanning = true;
-      _scanDir = '';
+      _scanDir = customPath ?? '';
       _scanCount = 0;
       _error = null;
     });
@@ -50,19 +75,27 @@ class _HomePageState extends State<HomePage> {
         return;
       }
 
-      final tracks = isQuick
-          ? await LocalMusicService.quickScan(
+      final tracks = customPath != null
+          ? await LocalMusicService.scanDirectory(
+              customPath,
               onProgress: (dir, count) {
                 if (!mounted) return;
                 setState(() { _scanDir = dir; _scanCount = count; });
               },
             )
-          : await LocalMusicService.fullScan(
-              onProgress: (dir, count) {
-                if (!mounted) return;
-                setState(() { _scanDir = dir; _scanCount = count; });
-              },
-            );
+          : isQuick
+              ? await LocalMusicService.quickScan(
+                  onProgress: (dir, count) {
+                    if (!mounted) return;
+                    setState(() { _scanDir = dir; _scanCount = count; });
+                  },
+                )
+              : await LocalMusicService.fullScan(
+                  onProgress: (dir, count) {
+                    if (!mounted) return;
+                    setState(() { _scanDir = dir; _scanCount = count; });
+                  },
+                );
 
       if (!mounted) return;
       context.read<PlaylistProvider>().setAllTracks(tracks);
@@ -75,9 +108,11 @@ class _HomePageState extends State<HomePage> {
         _isScanning = false;
       });
       if (mounted) {
-        final msg = isQuick
-            ? '快速扫描完成，共 ${tracks.length} 首歌曲'
-            : '完整扫描完成，共 ${tracks.length} 首歌曲';
+        final msg = customPath != null
+            ? '扫描完成，共 ${tracks.length} 首歌曲'
+            : isQuick
+                ? '快速扫描完成，共 ${tracks.length} 首歌曲'
+                : '完整扫描完成，共 ${tracks.length} 首歌曲';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg)),
         );
@@ -203,6 +238,15 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                   _DrawerItem(
+                    icon: Icons.folder_open,
+                    title: '自定义路径',
+                    subtitle: '扫描指定目录',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showCustomPathDialog();
+                    },
+                  ),
+                  _DrawerItem(
                     icon: Icons.upload,
                     title: l10n.drawerUploadMusic,
                     subtitle: l10n.drawerUploadMusicSub,
@@ -293,6 +337,14 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                   _DrawerItem(
+                    icon: Icons.waves,
+                    title: '更改外观',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showAppearanceSheet();
+                    },
+                  ),
+                  _DrawerItem(
                     icon: Icons.info_outline,
                     title: l10n.drawerAbout,
                     onTap: () {
@@ -350,6 +402,48 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _showAppearanceSheet() {
+    final colorScheme = Theme.of(context).colorScheme;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          final animProv = ctx.watch<AnimationProvider>();
+          final options = ['wave1', 'wave2', 'wave3'];
+          return SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Text('更改外观',
+                    style: Theme.of(ctx).textTheme.titleMedium),
+                ),
+                const Divider(),
+                ...options.asMap().entries.map((e) => ListTile(
+                  leading: Icon(
+                    animProv.index == e.key
+                        ? Icons.check
+                        : Icons.waves,
+                    color: animProv.index == e.key
+                        ? colorScheme.primary
+                        : null,
+                  ),
+                  title: Text('波浪 ${e.key + 1}'),
+                  onTap: () {
+                    ctx.read<AnimationProvider>().setIndex(e.key);
+                    Navigator.pop(ctx);
+                  },
+                )),
+                const SizedBox(height: 8),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildBody() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -364,6 +458,11 @@ class _HomePageState extends State<HomePage> {
         final filteredTracks = _selectedGroupId != null
             ? allTracks.where((t) => groupProv.getTrackIds(_selectedGroupId!).contains(t.id)).toList()
             : allTracks;
+        final searchedTracks = _searchQuery.isEmpty
+            ? filteredTracks
+            : filteredTracks.where((t) =>
+                t.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                t.artist.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
 
         if (_isScanning) {
           final scanPath = _scanDir;
@@ -457,9 +556,10 @@ class _HomePageState extends State<HomePage> {
 
         return Column(
           children: [
+            _buildSearchBar(),
             _buildGroupFilter(),
             Expanded(
-              child: filteredTracks.isEmpty
+              child: searchedTracks.isEmpty
                   ? Center(
                       child: Text(
                         l10n.homeEmptyTitle,
@@ -472,67 +572,91 @@ class _HomePageState extends State<HomePage> {
                       onRefresh: _startScan,
                       child: ListView.separated(
                         padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                        itemCount: filteredTracks.length,
+                        itemCount: searchedTracks.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 4),
                         itemBuilder: (context, index) {
-                          final track = filteredTracks[index];
+                          final track = searchedTracks[index];
                           final isCurrent = playlist.currentIndex == index;
                           final artist = track.displayArtist.isEmpty
                               ? l10n.unknownArtist
                               : track.displayArtist;
-                          return Card(
-                            elevation: isCurrent ? 2 : 0,
-                            color: isCurrent
-                                ? colorScheme.primaryContainer.withValues(alpha: 0.3)
-                                : colorScheme.surface,
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: isCurrent
-                                    ? colorScheme.primary
-                                    : colorScheme.surfaceContainerHighest,
-                                child: Icon(
-                                  isCurrent ? Icons.music_note : Icons.audiotrack,
-                                  color: isCurrent
-                                      ? colorScheme.onPrimary
-                                      : colorScheme.onSurfaceVariant,
-                                  size: 20,
+                          return Slidable(
+                            key: ValueKey(track.id),
+                            endActionPane: ActionPane(
+                              motion: const BehindMotion(),
+                              children: [
+                                SlidableAction(
+                                  onPressed: (_) => _showAddToGroupSheet(track),
+                                  backgroundColor: colorScheme.primary,
+                                  foregroundColor: colorScheme.onPrimary,
+                                  icon: Icons.playlist_add,
+                                  label: l10n.homeAddToGroup,
                                 ),
-                              ),
-                              title: Text(
-                                track.displayTitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: isCurrent ? FontWeight.w600 : null,
-                                  color: isCurrent ? colorScheme.primary : null,
+                                SlidableAction(
+                                  onPressed: (_) => _confirmRemoveTrack(track),
+                                  backgroundColor: colorScheme.error,
+                                  foregroundColor: colorScheme.onError,
+                                  icon: Icons.delete_outline,
+                                  label: l10n.delete,
                                 ),
-                              ),
-                              subtitle: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      artist,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                              ],
+                            ),
+                            child: Card(
+                              elevation: isCurrent ? 2 : 0,
+                              color: isCurrent
+                                  ? colorScheme.primaryContainer.withValues(alpha: 0.3)
+                                  : colorScheme.surface,
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: isCurrent
+                                      ? colorScheme.primary
+                                      : colorScheme.surfaceContainerHighest,
+                                  child: Icon(
+                                    isCurrent ? Icons.music_note : Icons.audiotrack,
+                                    color: isCurrent
+                                        ? colorScheme.onPrimary
+                                        : colorScheme.onSurfaceVariant,
+                                    size: 20,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    '.${track.extension}',
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
+                                ),
+                                title: Text(
+                                  track.displayTitle,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontWeight: isCurrent ? FontWeight.w600 : null,
+                                    color: isCurrent ? colorScheme.primary : null,
                                   ),
-                                ],
+                                ),
+                                subtitle: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        artist,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (isCurrent) ...[
+                                      Icon(Icons.equalizer, color: colorScheme.primary, size: 16),
+                                      const SizedBox(width: 4),
+                                    ],
+                                    if (track.displayDuration.isNotEmpty) ...[
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        track.displayDuration,
+                                        style: theme.textTheme.bodySmall?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                onTap: () {
+                                  playlist.playTracks(searchedTracks, startIndex: index);
+                                  context.push('/player');
+                                },
                               ),
-                              trailing: isCurrent
-                                  ? Icon(Icons.equalizer, color: colorScheme.primary, size: 20)
-                                  : null,
-                              onTap: () {
-                                playlist.playTracks(filteredTracks, startIndex: index);
-                                context.push('/player');
-                              },
-                              onLongPress: () => _showAddToGroupSheet(track),
                             ),
                           );
                         },
@@ -542,6 +666,23 @@ class _HomePageState extends State<HomePage> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: '搜索',
+          prefixIcon: const Icon(Icons.search),
+          border: const OutlineInputBorder(),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        ),
+        onChanged: _onSearchChanged,
+      ),
     );
   }
 
@@ -827,6 +968,50 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Future<void> _confirmRemoveTrack(LocalTrack track) async {
+    final l10n = AppLocalizations.of(context)!;
+    final groupProv = context.read<GroupProvider>();
+    final playlist = context.read<PlaylistProvider>();
+    final groupName = _selectedGroupId != null
+        ? groupProv.groups
+            .firstWhere((g) => g.id == _selectedGroupId)
+            .name
+        : null;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.delete),
+        content: Text(groupName != null
+            ? l10n.homeRemoveTrackFromGroup(groupName)
+            : l10n.homeRemoveTrackConfirmAll),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    if (_selectedGroupId != null) {
+      await groupProv.removeTrack(_selectedGroupId!, track.id);
+    } else {
+      await playlist.removeTrackFromMaster(track.id);
+      await groupProv.load();
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.homeTrackRemoved),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   void _showAddToGroupSheet(LocalTrack track) {
     final l10n = AppLocalizations.of(context)!;
     final groupProv = context.read<GroupProvider>();
@@ -862,6 +1047,61 @@ class _HomePageState extends State<HomePage> {
                 child: Text(l10n.homeNoPlaylists),
               ),
             const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCustomPathDialog() {
+    final controller = TextEditingController();
+    final l10n = AppLocalizations.of(context)!;
+    String? error;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('扫描自定义目录'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('输入要扫描的文件夹路径：'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  hintText: r'D:\Download\Music',
+                  border: const OutlineInputBorder(),
+                  errorText: error,
+                ),
+                autofocus: true,
+                onSubmitted: (v) {
+                  if (v.trim().isNotEmpty) {
+                    Navigator.pop(ctx);
+                    _runScan(isQuick: false, customPath: v.trim());
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final path = controller.text.trim();
+                if (path.isEmpty) {
+                  setDialogState(() => error = '请输入路径');
+                  return;
+                }
+                Navigator.pop(ctx);
+                _runScan(isQuick: false, customPath: path);
+              },
+              child: const Text('扫描'),
+            ),
           ],
         ),
       ),
@@ -914,7 +1154,7 @@ class _MiniPlayer extends StatelessWidget {
             stream: playlist.positionStream,
             builder: (context, snap) {
               final pos = snap.data ?? Duration.zero;
-              return StreamBuilder<Duration?>(
+              return StreamBuilder<Duration>(
                 stream: playlist.durationStream,
                 builder: (context, snap2) {
                   final dur = snap2.data ?? Duration.zero;
@@ -973,10 +1213,14 @@ class _MiniPlayer extends StatelessWidget {
                     ],
                   ),
                 ),
-                StreamBuilder(
-                  stream: playlist.playerStateStream,
+                IconButton(
+                  icon: Icon(Icons.skip_previous_rounded, color: colorScheme.primary),
+                  onPressed: () => playlist.previous(),
+                ),
+                StreamBuilder<bool>(
+                  stream: playlist.playingStream,
                   builder: (context, snap) {
-                    final playing = snap.data?.playing ?? false;
+                    final playing = snap.data ?? false;
                     return IconButton(
                       icon: Icon(
                         playing ? Icons.pause_rounded : Icons.play_arrow_rounded,

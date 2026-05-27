@@ -177,4 +177,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get english => 'English';
+
+  @override
+  String get homeAddToGroup => '添加到分组';
+
+  @override
+  String get homeRemoveTrackConfirmAll => '确定从所有分组中移除此曲目？';
+
+  @override
+  String homeRemoveTrackFromGroup(String name) {
+    return '确定从「$name」中移除此曲目？';
+  }
+
+  @override
+  String get homeTrackRemoved => '已移出曲目';
 }

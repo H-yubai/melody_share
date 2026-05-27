@@ -179,4 +179,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get english => 'English';
+
+  @override
+  String get homeAddToGroup => 'Add to Group';
+
+  @override
+  String get homeRemoveTrackConfirmAll => 'Remove this track from all groups?';
+
+  @override
+  String homeRemoveTrackFromGroup(String name) {
+    return 'Remove this track from \"$name\"?';
+  }
+
+  @override
+  String get homeTrackRemoved => 'Track removed';
 }

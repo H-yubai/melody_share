@@ -421,6 +421,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'English'**
   String get english;
+
+  /// No description provided for @homeAddToGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Group'**
+  String get homeAddToGroup;
+
+  /// No description provided for @homeRemoveTrackConfirmAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this track from all groups?'**
+  String get homeRemoveTrackConfirmAll;
+
+  /// No description provided for @homeRemoveTrackFromGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this track from \"{name}\"?'**
+  String homeRemoveTrackFromGroup(String name);
+
+  /// No description provided for @homeTrackRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Track removed'**
+  String get homeTrackRemoved;
 }
 
 class _AppLocalizationsDelegate

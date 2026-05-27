@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
 import 'router/app_router.dart';
+import 'services/animation_provider.dart';
 import 'services/group_provider.dart';
 import 'services/locale_provider.dart';
 import 'services/music_handler.dart';
@@ -20,6 +21,7 @@ class MelodyShareApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider(create: (_) => AnimationProvider()),
         ChangeNotifierProvider(create: (_) => PlaylistProvider(handler)
           ..loadCachedTracks()
           ..loadRatings()),

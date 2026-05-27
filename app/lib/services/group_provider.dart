@@ -51,6 +51,11 @@ class GroupProvider extends ChangeNotifier {
     await load();
   }
 
+  Future<void> removeTrackFromAllGroups(String trackId) async {
+    await DatabaseService.removeTrackFromAllGroups(trackId);
+    await load();
+  }
+
   Future<void> removeTrack(int groupId, String trackId) async {
     await DatabaseService.removeTrackFromGroup(groupId, trackId);
     await load();

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:metadata_god/metadata_god.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -27,22 +28,38 @@ class LocalMusicService {
     return false;
   }
 
-  /// Quick scan: only Music & Download dirs, 1 level deep.
-  /// [onProgress] called with (currentDirPath, tracksFoundSoFar).
   static Future<List<LocalTrack>> quickScan({
     void Function(String dir, int count)? onProgress,
   }) async {
     final result = <LocalTrack>[];
+    final paths = <String>{};
 
-    final paths = <String>{'/storage/emulated/0/Music', '/storage/emulated/0/Download'};
-    try {
-      final list = await getExternalStorageDirectories(type: StorageDirectory.music);
-      if (list != null) {
-        for (final d in list) {
-          paths.add(d.path);
+    if (Platform.isAndroid) {
+      paths.addAll(['/storage/emulated/0/Music', '/storage/emulated/0/Download']);
+      try {
+        final list = await getExternalStorageDirectories(type: StorageDirectory.music);
+        if (list != null) {
+            for (final d in list) { paths.add(d.path); }
+        }
+      } catch (_) {}
+    } else if (Platform.isWindows) {
+      final home = Platform.environment['USERPROFILE'];
+      if (home != null) {
+        paths.add('$home\\Music');
+        paths.add('$home\\Downloads');
+      }
+      for (final drive in _listWindowsDrives()) {
+        for (final sub in ['Music', 'Download\\Music', 'Downloads\\Music']) {
+          paths.add('$drive\\$sub');
         }
       }
-    } catch (_) {}
+    } else {
+      final home = Platform.environment['HOME'];
+      if (home != null) {
+        paths.add('$home/Music');
+        paths.add('$home/Downloads');
+      }
+    }
 
     for (final path in paths) {
       try {
@@ -56,23 +73,53 @@ class LocalMusicService {
     return result;
   }
 
-  /// Full scan: all system storage dirs, recursive (skip non-music dirs).
-  /// [onProgress] called with (currentDirPath, tracksFoundSoFar).
+  static Future<List<LocalTrack>> scanDirectory(
+    String dirPath, {
+    void Function(String dir, int count)? onProgress,
+  }) async {
+    final result = <LocalTrack>[];
+    final dir = Directory(dirPath);
+    if (await dir.exists()) {
+      onProgress?.call(dirPath, 0);
+      await _scanDeep(dir, result, onProgress);
+    }
+    return result;
+  }
+
+  static List<String> _listWindowsDrives() {
+    final result = <String>[];
+    for (var c = 'C'.codeUnitAt(0); c <= 'Z'.codeUnitAt(0); c++) {
+      final drive = String.fromCharCode(c);
+      try {
+        if (Directory('$drive:\\').existsSync()) {
+          result.add('$drive:');
+        }
+      } catch (_) {}
+    }
+    return result;
+  }
+
   static Future<List<LocalTrack>> fullScan({
     void Function(String dir, int count)? onProgress,
   }) async {
     final result = <LocalTrack>[];
     final paths = <String>{};
 
-    for (final type in StorageDirectory.values) {
-      try {
-        final list = await getExternalStorageDirectories(type: type);
-        if (list != null) {
-          for (final d in list) {
-            paths.add(d.path);
+    if (Platform.isAndroid) {
+      for (final type in StorageDirectory.values) {
+        try {
+          final list = await getExternalStorageDirectories(type: type);
+          if (list != null) {
+          for (final d in list) { paths.add(d.path); }
           }
-        }
-      } catch (_) {}
+        } catch (_) {}
+      }
+    } else if (Platform.isWindows) {
+      final home = Platform.environment['USERPROFILE'];
+      if (home != null) paths.add(home);
+    } else {
+      final home = Platform.environment['HOME'];
+      if (home != null) paths.add(home);
     }
 
     for (final path in paths) {
@@ -90,12 +137,10 @@ class LocalMusicService {
   static Future<void> _scanQuick(Directory dir, List<LocalTrack> result,
       void Function(String, int)? onProgress) async {
     try {
-      await dir
-          .list(recursive: true, followLinks: false)
-          .timeout(const Duration(seconds: 10))
-          .forEach((entity) {
-        if (entity is File) _tryAddFile(entity, result);
-      });
+      await for (final entity
+          in dir.list(recursive: true, followLinks: false).timeout(const Duration(seconds: 10))) {
+        if (entity is File) await _tryAddFile(entity, result);
+      }
     } catch (_) {}
   }
 
@@ -105,7 +150,7 @@ class LocalMusicService {
       await for (final entity
           in dir.list(followLinks: false).timeout(const Duration(seconds: 10))) {
         if (entity is File) {
-          _tryAddFile(entity, result);
+          await _tryAddFile(entity, result);
         } else if (entity is Directory) {
           final name = entity.uri.pathSegments.last;
           if (!name.startsWith('.') && !_skipDirs.contains(name)) {
@@ -117,16 +162,16 @@ class LocalMusicService {
     } catch (_) {}
   }
 
-  static void _tryAddFile(File file, List<LocalTrack> result) {
+  static Future<void> _tryAddFile(File file, List<LocalTrack> result) async {
     try {
       final ext = file.path.split('.').last.toLowerCase();
       if (!_audioExtensions.contains(ext)) return;
-      final track = _parseFile(file);
+      final track = await _parseFile(file);
       if (track != null) result.add(track);
     } catch (_) {}
   }
 
-  static LocalTrack? _parseFile(File file) {
+  static Future<LocalTrack?> _parseFile(File file) async {
     try {
       final uri = file.uri;
       final name = uri.pathSegments.last;
@@ -134,6 +179,8 @@ class LocalMusicService {
 
       String title = nameWithoutExt.replaceAll(RegExp(r'[_.]'), ' ');
       String artist = '';
+      String album = '';
+      int durationMs = 0;
 
       final dashIdx = nameWithoutExt.indexOf(' - ');
       if (dashIdx > 0) {
@@ -144,12 +191,25 @@ class LocalMusicService {
       title = title.replaceAll(RegExp(r'\s*\[.*?\]\s*$'), '').trim();
 
       final ext = name.split('.').last;
+
+      try {
+        final meta = await MetadataGod.readMetadata(file: file.path);
+        if ((meta.title ?? '').isNotEmpty) title = meta.title!;
+        if ((meta.artist ?? '').isNotEmpty) artist = meta.artist!;
+        if ((meta.album ?? '').isNotEmpty) album = meta.album!;
+        if (meta.durationMs != null && meta.durationMs! > 0) {
+          durationMs = meta.durationMs!.toInt();
+        }
+      } catch (_) {}
+
       return LocalTrack(
         id: nameWithoutExt.hashCode.toString(),
         filePath: file.path,
         title: title,
         artist: artist,
         extension: ext,
+        durationMs: durationMs,
+        album: album,
       );
     } catch (_) {
       return null;

@@ -27,7 +27,7 @@ class DatabaseService {
   static Future<Database> _openDb(String path) {
     return openDatabase(
       path,
-      version: 3,
+      version: 4,
       onConfigure: (db) async {
         await db.rawQuery('PRAGMA busy_timeout = 5000');
       },
@@ -53,6 +53,8 @@ class DatabaseService {
         track_path TEXT NOT NULL,
         track_title TEXT NOT NULL,
         track_artist TEXT DEFAULT '',
+        track_album TEXT DEFAULT '',
+        track_duration_ms INTEGER DEFAULT 0,
         track_ext TEXT NOT NULL,
         sort_order INTEGER NOT NULL DEFAULT 0,
         added_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -71,6 +73,8 @@ class DatabaseService {
         file_path TEXT NOT NULL,
         title TEXT NOT NULL,
         artist TEXT DEFAULT '',
+        album TEXT DEFAULT '',
+        duration_ms INTEGER DEFAULT 0,
         ext TEXT NOT NULL
       )
     ''');
@@ -103,6 +107,20 @@ class DatabaseService {
           updated_at TEXT NOT NULL DEFAULT (datetime('now'))
         )
       ''');
+    }
+    if (oldVersion < 4) {
+      try {
+        await db.execute('ALTER TABLE scanned_tracks ADD COLUMN album TEXT DEFAULT \'\'');
+      } catch (_) {}
+      try {
+        await db.execute('ALTER TABLE scanned_tracks ADD COLUMN duration_ms INTEGER DEFAULT 0');
+      } catch (_) {}
+      try {
+        await db.execute('ALTER TABLE group_tracks ADD COLUMN track_album TEXT DEFAULT \'\'');
+      } catch (_) {}
+      try {
+        await db.execute('ALTER TABLE group_tracks ADD COLUMN track_duration_ms INTEGER DEFAULT 0');
+      } catch (_) {}
     }
   }
 
@@ -162,6 +180,8 @@ class DatabaseService {
       title: r['track_title'] as String,
       artist: r['track_artist'] as String,
       extension: r['track_ext'] as String,
+      album: (r['track_album'] as String?) ?? '',
+      durationMs: (r['track_duration_ms'] as int?) ?? 0,
     )).toList();
   }
 
@@ -202,6 +222,8 @@ class DatabaseService {
       'track_path': track.filePath,
       'track_title': track.title,
       'track_artist': track.artist,
+      'track_album': track.album,
+      'track_duration_ms': track.durationMs,
       'track_ext': track.extension,
       'sort_order': (maxOrder ?? -1) + 1,
     });
@@ -211,6 +233,11 @@ class DatabaseService {
       where: 'id = ?',
       whereArgs: [groupId],
     );
+  }
+
+  static Future<void> removeTrackFromAllGroups(String trackId) async {
+    final db = await database;
+    await db.delete('group_tracks', where: 'track_id = ?', whereArgs: [trackId]);
   }
 
   static Future<void> removeTrackFromGroup(int groupId, String trackId) async {
@@ -240,6 +267,11 @@ class DatabaseService {
 
   // ─── Scanned Tracks ──────────────────────────────────────────
 
+  static Future<void> deleteScannedTrack(String trackId) async {
+    final db = await database;
+    await db.delete('scanned_tracks', where: 'id = ?', whereArgs: [trackId]);
+  }
+
   static Future<void> saveScannedTracks(List<LocalTrack> tracks) async {
     final db = await database;
     await db.transaction((txn) async {
@@ -251,6 +283,8 @@ class DatabaseService {
           'file_path': track.filePath,
           'title': track.title,
           'artist': track.artist,
+          'album': track.album,
+          'duration_ms': track.durationMs,
           'ext': track.extension,
         });
       }
@@ -267,6 +301,8 @@ class DatabaseService {
       title: r['title'] as String,
       artist: r['artist'] as String,
       extension: r['ext'] as String,
+      album: (r['album'] as String?) ?? '',
+      durationMs: (r['duration_ms'] as int?) ?? 0,
     )).toList();
   }
 

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:lottie/lottie.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
+import '../services/animation_provider.dart';
 import '../services/music_handler.dart';
 import '../services/playlist_provider.dart';
 
@@ -23,8 +24,9 @@ class _PlayerPageState extends State<PlayerPage> {
   @override
   Widget build(BuildContext context) {
     final playlist = context.read<PlaylistProvider>();
+    final animProv = context.read<AnimationProvider>();
     return ListenableBuilder(
-      listenable: playlist,
+      listenable: Listenable.merge([playlist, animProv]),
       builder: (context, _) {
         final l10n = AppLocalizations.of(context)!;
         final track = playlist.currentTrack;
@@ -36,6 +38,7 @@ class _PlayerPageState extends State<PlayerPage> {
         }
 
         final colorScheme = Theme.of(context).colorScheme;
+        final isPlaying = playlist.isPlaying;
 
         return Scaffold(
           body: Container(
@@ -59,7 +62,7 @@ class _PlayerPageState extends State<PlayerPage> {
                     title: Text(
                       l10n.playerNowPlaying,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: colorScheme.onSurface,
                       ),
@@ -90,10 +93,14 @@ class _PlayerPageState extends State<PlayerPage> {
                                 ),
                               ],
                             ),
-                            child: Icon(
-                              Icons.music_note,
-                              size: 80,
-                              color: colorScheme.primary.withValues(alpha: 0.6),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Lottie.asset(
+                                animProv.assetPath,
+                                animate: isPlaying,
+                                repeat: true,
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                         ),
@@ -126,10 +133,12 @@ class _PlayerPageState extends State<PlayerPage> {
                         const SizedBox(height: 40),
                         StreamBuilder<Duration>(
                           stream: playlist.positionStream,
+                          initialData: playlist.position,
                           builder: (context, snap) {
                             final pos = snap.data ?? Duration.zero;
-                            return StreamBuilder<Duration?>(
+                            return StreamBuilder<Duration>(
                               stream: playlist.durationStream,
+                              initialData: playlist.duration,
                               builder: (context, snap2) {
                                 final dur = snap2.data ?? Duration.zero;
                                 return Padding(
@@ -151,7 +160,7 @@ class _PlayerPageState extends State<PlayerPage> {
                                               ? (pos.inMilliseconds / dur.inMilliseconds).clamp(0.0, 1.0)
                                               : 0,
                                           onChanged: (v) {
-                                            playlist.player.seek(Duration(
+                                            playlist.seek(Duration(
                                               milliseconds: (v * dur.inMilliseconds).round(),
                                             ));
                                           },
@@ -195,33 +204,27 @@ class _PlayerPageState extends State<PlayerPage> {
                               color: colorScheme.onSurface,
                             ),
                             const SizedBox(width: 16),
-                            StreamBuilder<PlayerState>(
-                              stream: playlist.playerStateStream,
-                              builder: (context, snap) {
-                                final isPlaying = snap.data?.playing ?? false;
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: colorScheme.primary,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: colorScheme.primary.withValues(alpha: 0.3),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: colorScheme.primary,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: colorScheme.primary.withValues(alpha: 0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
                                   ),
-                                  child: IconButton(
-                                    iconSize: 36,
-                                    padding: const EdgeInsets.all(16),
-                                    icon: Icon(
-                                      isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                                      color: colorScheme.onPrimary,
-                                    ),
-                                    onPressed: () => playlist.togglePlayPause(),
-                                  ),
-                                );
-                              },
+                                ],
+                              ),
+                              child: IconButton(
+                                iconSize: 36,
+                                padding: const EdgeInsets.all(16),
+                                icon: Icon(
+                                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                  color: colorScheme.onPrimary,
+                                ),
+                                onPressed: () => playlist.togglePlayPause(),
+                              ),
                             ),
                             const SizedBox(width: 16),
                             IconButton(
@@ -237,11 +240,12 @@ class _PlayerPageState extends State<PlayerPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             _ModeButton(playlist: playlist, colorScheme: colorScheme),
-                            const SizedBox(width: 48),
+                            const SizedBox(width: 16),
                             _RatingButton(playlist: playlist, colorScheme: colorScheme),
-                            const SizedBox(width: 48),
+                            const SizedBox(width: 16),
                             IconButton(
-                              iconSize: 24,
+                              iconSize: 28,
+                              constraints: const BoxConstraints(minWidth: 56, minHeight: 56),
                               icon: Icon(Icons.queue_music_rounded,
                                   color: colorScheme.onSurfaceVariant),
                               onPressed: () => _showQueue(context),
@@ -295,6 +299,24 @@ class _PlayerPageState extends State<PlayerPage> {
                       if (queue.isNotEmpty) ...[
                         const SizedBox(width: 8),
                         TextButton(
+                          onPressed: () {
+                            final idx = currentIdx;
+                            if (idx != null && idx >= 0 && scrollController.hasClients) {
+                              const tileHeight = 60.0;
+                              final viewport = scrollController.position.viewportDimension;
+                              final offset = idx * tileHeight - (viewport - tileHeight) / 2;
+                              scrollController.animateTo(
+                                offset.clamp(0.0, scrollController.position.maxScrollExtent),
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          },
+                          child: Text('当前',
+                            style: TextStyle(color: colorScheme.primary)),
+                        ),
+                        const SizedBox(width: 4),
+                        TextButton(
                           onPressed: () => playlist.clearQueue(),
                           child: Text(l10n.playerClear,
                             style: TextStyle(color: colorScheme.error)),
@@ -316,6 +338,9 @@ class _PlayerPageState extends State<PlayerPage> {
                             final t = queue[i];
                             final isCurrent = i == currentIdx;
                             return ListTile(
+                              tileColor: isCurrent
+                                  ? colorScheme.primaryContainer.withValues(alpha: 0.3)
+                                  : null,
                               dense: true,
                               leading: Icon(
                                 isCurrent ? Icons.music_note : Icons.audiotrack,
@@ -333,12 +358,25 @@ class _PlayerPageState extends State<PlayerPage> {
                                   fontWeight: isCurrent ? FontWeight.w600 : null,
                                 ),
                               ),
-                              subtitle: Text(t.displayArtist,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: colorScheme.onSurfaceVariant)),
+                              subtitle: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Text(t.displayArtist,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: colorScheme.onSurfaceVariant)),
+                                  ),
+                                  if (t.displayDuration.isNotEmpty)
+                                    Text(t.displayDuration,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        height: 1.0,
+                                        color: colorScheme.onSurfaceVariant)),
+                                ],
+                              ),
                               trailing: IconButton(
                                 icon: Icon(Icons.close, size: 18,
                                     color: colorScheme.onSurfaceVariant),
@@ -386,7 +424,8 @@ class _ModeButton extends StatelessWidget {
         color = colorScheme.primary;
     }
     return IconButton(
-      iconSize: 24,
+      iconSize: 28,
+      constraints: const BoxConstraints(minWidth: 56, minHeight: 56),
       icon: Icon(icon, color: color),
       onPressed: () => playlist.cyclePlaybackMode(),
     );
@@ -403,13 +442,26 @@ class _RatingButton extends StatefulWidget {
   State<_RatingButton> createState() => _RatingButtonState();
 }
 
-class _RatingButtonState extends State<_RatingButton> {
+class _RatingButtonState extends State<_RatingButton>
+    with TickerProviderStateMixin {
   int _rating = 0;
+  int _animKey = 0;
+  bool _hovered = false;
   bool _longPressFired = false;
+  late final AnimationController _bounceCtrl;
+  late final Animation<double> _bounceAnim;
 
   @override
   void initState() {
     super.initState();
+    _bounceCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _bounceAnim = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.35), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 1.35, end: 1.0), weight: 1),
+    ]).animate(_bounceCtrl);
     _sync();
     widget.playlist.addListener(_sync);
   }
@@ -417,13 +469,17 @@ class _RatingButtonState extends State<_RatingButton> {
   @override
   void dispose() {
     widget.playlist.removeListener(_sync);
+    _bounceCtrl.dispose();
     super.dispose();
   }
 
   void _sync() {
     final track = widget.playlist.currentTrack;
+    final newRating = track != null ? widget.playlist.getRating(track.id) : 0;
+    if (newRating == _rating) return;
     setState(() {
-      _rating = track != null ? widget.playlist.getRating(track.id) : 0;
+      if (newRating > _rating) _animKey++;
+      _rating = newRating;
     });
   }
 
@@ -432,12 +488,26 @@ class _RatingButtonState extends State<_RatingButton> {
     if (track == null) return;
     final next = _rating >= 3 ? 0 : _rating + 1;
     widget.playlist.rateTrack(track.id, next);
+    setState(() {
+      if (next > _rating) {
+        _animKey++;
+        _bounceCtrl.forward(from: 0.0);
+      }
+      _rating = next;
+    });
   }
 
   void _setMax() {
     final track = widget.playlist.currentTrack;
     if (track == null) return;
     widget.playlist.rateTrack(track.id, 3);
+    setState(() {
+      if (3 > _rating) {
+        _animKey++;
+        _bounceCtrl.forward(from: 0.0);
+      }
+      _rating = 3;
+    });
   }
 
   @override
@@ -459,37 +529,49 @@ class _RatingButtonState extends State<_RatingButton> {
       onLongPressCancel: () {
         _longPressFired = true;
       },
-      child: SizedBox(
-        width: 48,
-        height: 48,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Icon(
-              filled ? Icons.favorite : Icons.favorite_border,
-              size: 24,
-              color: filled ? Colors.red : widget.colorScheme.onSurfaceVariant,
+      child: ScaleTransition(
+        scale: _bounceAnim,
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _hovered = true),
+          onExit: (_) => setState(() => _hovered = false),
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _hovered ? Theme.of(context).hoverColor : Colors.transparent,
             ),
-            Positioned(
-              right: 2,
-              bottom: 6,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0),
-                decoration: BoxDecoration(
-                  color: widget.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(8),
+            padding: const EdgeInsets.all(8),
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  filled ? Icons.favorite : Icons.favorite_border,
+                  color: filled ? Colors.red : widget.colorScheme.onSurfaceVariant,
+                  size: 28,
                 ),
-                child: Text(
-                  '$_rating',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: filled ? Colors.red : widget.colorScheme.onSurfaceVariant,
+                if (filled)
+                  Lottie.asset(
+                    'assets/animations/lottie/like.json',
+                    key: ValueKey('like_$_animKey'),
+                    width: 48,
+                    height: 48,
+                    repeat: false,
+                    animate: true,
                   ),
-                ),
-              ),
+                if (filled)
+                  Text(
+                    '$_rating',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

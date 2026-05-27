@@ -1,26 +1,14 @@
-import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:metadata_god/metadata_god.dart';
 import 'app.dart';
 import 'services/music_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MediaKit.ensureInitialized();
+  await MetadataGod.initialize();
 
-  late final MusicHandler handler;
-
-  try {
-    handler = await AudioService.init(
-      builder: () => MusicHandler(),
-      config: const AudioServiceConfig(
-        androidNotificationChannelId: 'com.melody_share.channel',
-        androidNotificationChannelName: 'Melody Share',
-        androidNotificationOngoing: true,
-        androidStopForegroundOnPause: true,
-      ),
-    ).timeout(const Duration(seconds: 5));
-  } catch (_) {
-    handler = MusicHandler();
-  }
-
+  final handler = MusicHandler();
   runApp(MelodyShareApp(handler: handler));
 }

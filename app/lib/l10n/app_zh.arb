@@ -82,5 +82,16 @@
   "sortByName": "按名称",
   "sortByCount": "按数量",
   "chinese": "中文",
-  "english": "English"
+  "english": "English",
+  "homeAddToGroup": "添加到分组",
+  "homeRemoveTrackConfirmAll": "确定从所有分组中移除此曲目？",
+  "homeRemoveTrackFromGroup": "确定从「{name}」中移除此曲目？",
+  "@homeRemoveTrackFromGroup": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeTrackRemoved": "已移出曲目"
 }

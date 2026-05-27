@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
@@ -33,6 +34,81 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
       _groupName = group.name;
       _tracks = tracks;
     });
+  }
+
+  Future<void> _confirmRemoveTrack(LocalTrack track) async {
+    final l10n = AppLocalizations.of(context)!;
+    final groupProv = context.read<GroupProvider>();
+    final groupName =
+        groupProv.groups.firstWhere((g) => g.id == widget.groupId).name;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.delete),
+        content: Text(l10n.homeRemoveTrackFromGroup(groupName)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await groupProv.removeTrack(widget.groupId, track.id);
+    await _load();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.homeTrackRemoved),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showAddToGroupSheet(LocalTrack track) {
+    final l10n = AppLocalizations.of(context)!;
+    final groupProv = context.read<GroupProvider>();
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(l10n.homeAddToPlaylist,
+                  style: Theme.of(ctx).textTheme.titleMedium),
+            ),
+            const Divider(),
+            ...groupProv.groups.map((g) => ListTile(
+                  leading: const Icon(Icons.folder_outlined),
+                  title: Text(g.name),
+                  onTap: () {
+                    groupProv.addTrack(g.id, track);
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.homeAddedToGroup(g.name)),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                )),
+            if (groupProv.groups.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(l10n.homeNoPlaylists),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -84,44 +160,66 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                           ? l10n.unknownArtist
                           : track.displayArtist;
 
-                      return Card(
-                        elevation: isCurrent ? 2 : 0,
-                        color: isCurrent
-                            ? colorScheme.primaryContainer.withValues(alpha: 0.3)
-                            : colorScheme.surface,
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: isCurrent
-                                ? colorScheme.primary
-                                : colorScheme.surfaceContainerHighest,
-                            child: Icon(
-                              isCurrent ? Icons.music_note : Icons.audiotrack,
-                              color: isCurrent
-                                  ? colorScheme.onPrimary
-                                  : colorScheme.onSurfaceVariant,
-                              size: 20,
+                      return Slidable(
+                        key: ValueKey(track.id),
+                        endActionPane: ActionPane(
+                          motion: const BehindMotion(),
+                          children: [
+                            SlidableAction(
+                              onPressed: (_) => _showAddToGroupSheet(track),
+                              backgroundColor: colorScheme.primary,
+                              foregroundColor: colorScheme.onPrimary,
+                              icon: Icons.playlist_add,
+                              label: l10n.homeAddToGroup,
                             ),
-                          ),
-                          title: Text(track.displayTitle,
-                              maxLines: 1, overflow: TextOverflow.ellipsis),
-                          subtitle: Text(artist,
-                              maxLines: 1, overflow: TextOverflow.ellipsis),
-                          trailing: IconButton(
-                            icon: Icon(Icons.remove_circle_outline,
-                                color: colorScheme.error),
-                            onPressed: () async {
-                              await context
-                                  .read<GroupProvider>()
-                                  .removeTrack(widget.groupId, track.id);
-                              await _load();
+                            SlidableAction(
+                              onPressed: (_) => _confirmRemoveTrack(track),
+                              backgroundColor: colorScheme.error,
+                              foregroundColor: colorScheme.onError,
+                              icon: Icons.delete_outline,
+                              label: l10n.delete,
+                            ),
+                          ],
+                        ),
+                        child: Card(
+                          elevation: isCurrent ? 2 : 0,
+                          color: isCurrent
+                              ? colorScheme.primaryContainer.withValues(alpha: 0.3)
+                              : colorScheme.surface,
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: isCurrent
+                                  ? colorScheme.primary
+                                  : colorScheme.surfaceContainerHighest,
+                              child: Icon(
+                                isCurrent ? Icons.music_note : Icons.audiotrack,
+                                color: isCurrent
+                                    ? colorScheme.onPrimary
+                                    : colorScheme.onSurfaceVariant,
+                                size: 20,
+                              ),
+                            ),
+                            title: Text(track.displayTitle,
+                                maxLines: 1, overflow: TextOverflow.ellipsis),
+                            subtitle: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(artist,
+                                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                                ),
+                                if (track.displayDuration.isNotEmpty)
+                                  Text(' ${track.displayDuration}',
+                                      style: TextStyle(
+                                        color: colorScheme.onSurfaceVariant)),
+                              ],
+                            ),
+                            onTap: () {
+                              context
+                                  .read<PlaylistProvider>()
+                                  .playTracks(_tracks!, startIndex: index);
+                              context.push('/player');
                             },
                           ),
-                          onTap: () {
-                            context
-                                .read<PlaylistProvider>()
-                                .playTracks(_tracks!, startIndex: index);
-                            context.push('/player');
-                          },
                         ),
                       );
                     },

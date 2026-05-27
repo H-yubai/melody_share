@@ -85,5 +85,16 @@
   "sortByName": "By name",
   "sortByCount": "By count",
   "chinese": "Chinese",
-  "english": "English"
+  "english": "English",
+  "homeAddToGroup": "Add to Group",
+  "homeRemoveTrackConfirmAll": "Remove this track from all groups?",
+  "homeRemoveTrackFromGroup": "Remove this track from \"{name}\"?",
+  "@homeRemoveTrackFromGroup": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeTrackRemoved": "Track removed"
 }

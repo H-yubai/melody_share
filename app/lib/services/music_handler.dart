@@ -1,15 +1,16 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:audio_service/audio_service.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:media_kit/media_kit.dart';
+
 import '../models/local_track.dart';
 import 'database_service.dart';
 
 enum PlaybackMode { noRepeat, repeatAll, repeatOne, shuffle }
 
-class MusicHandler extends BaseAudioHandler with SeekHandler {
-  final AudioPlayer player = AudioPlayer();
+class MusicHandler {
+  final Player player = Player();
   final _random = Random();
 
   List<LocalTrack> _allTracks = [];
@@ -19,13 +20,17 @@ class MusicHandler extends BaseAudioHandler with SeekHandler {
   List<int> _shuffleOrder = [];
   int _shuffleCursor = 0;
   Map<String, int> _ratings = {};
-  StreamSubscription? _processingSub;
+  StreamSubscription? _completedSub;
+  StreamSubscription? _errorSub;
 
   MusicHandler() {
-    _processingSub = player.processingStateStream.listen((state) {
-      if (state == ProcessingState.completed) next();
+    _completedSub = player.stream.completed.listen((completed) {
+      if (completed) next();
     });
-    player.playerStateStream.listen((_) => _notify());
+    player.stream.playing.listen((_) => _notify());
+    _errorSub = player.stream.error.listen((err) {
+      if (err.isNotEmpty) debugPrint('MusicHandler player error: $err');
+    });
     _loadRatings();
   }
 
@@ -37,8 +42,6 @@ class MusicHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
-  // ─── Getters ─────────────────────────────────────────────────
-
   List<LocalTrack> get allTracks => List.unmodifiable(_allTracks);
   List<LocalTrack> get queueTracks => List.unmodifiable(_localQueue);
   int? get currentIndex => _currentIndex >= 0 ? _currentIndex : null;
@@ -47,15 +50,24 @@ class MusicHandler extends BaseAudioHandler with SeekHandler {
           ? _localQueue[_currentIndex]
           : null;
   PlaybackMode get mode => _mode;
-  bool get isPlaying => player.playing;
+  bool get isPlaying => player.state.playing;
 
-  Stream<Duration> get positionStream => player.positionStream;
-  Stream<Duration?> get durationStream => player.durationStream;
-  Stream<PlayerState> get playerStateStream => player.playerStateStream;
+  Duration get position => player.state.position;
+  Duration get duration => player.state.duration;
+  Stream<Duration> get positionStream => player.stream.position;
+  Stream<Duration> get durationStream => player.stream.duration;
+  Stream<bool> get playingStream => player.stream.playing;
+  Stream<bool> get completedStream => player.stream.completed;
 
   int getRating(String trackId) => _ratings[trackId] ?? 0;
 
-  // ─── Data ────────────────────────────────────────────────────
+  Future<void> removeTrackFromMaster(String trackId) async {
+    _allTracks.removeWhere((t) => t.id == trackId);
+    _localQueue.removeWhere((t) => t.id == trackId);
+    await DatabaseService.deleteScannedTrack(trackId);
+    await DatabaseService.removeTrackFromAllGroups(trackId);
+    _notify();
+  }
 
   Future<void> loadCachedTracks() async {
     try {
@@ -90,11 +102,8 @@ class MusicHandler extends BaseAudioHandler with SeekHandler {
     _notify();
   }
 
-  // ─── Playback ─────────────────────────────────────────────────
-
-  @override
   Future<void> play() async {
-    if (player.playing) return;
+    if (player.state.playing) return;
     if (_currentIndex >= 0 && _currentIndex < _localQueue.length) {
       await player.play();
     } else if (_allTracks.isNotEmpty) {
@@ -102,13 +111,10 @@ class MusicHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
-  @override
   Future<void> pause() async {
     await player.pause();
-    _notify();
   }
 
-  @override
   Future<void> stop() async {
     await player.stop();
     _currentIndex = -1;
@@ -144,12 +150,12 @@ class MusicHandler extends BaseAudioHandler with SeekHandler {
     final track = currentTrack;
     if (track == null) return;
     try {
-      await player.setAudioSource(AudioSource.file(track.filePath));
+      await player.open(Media(track.fileUri));
       await player.play();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('MusicHandler._playCurrent: $e');
+    }
   }
-
-  // ─── Queue ────────────────────────────────────────────────────
 
   void addToQueue(LocalTrack track) {
     _localQueue.add(track);
@@ -172,8 +178,6 @@ class MusicHandler extends BaseAudioHandler with SeekHandler {
     _currentIndex = -1;
     _notify();
   }
-
-  // ─── Mode ─────────────────────────────────────────────────────
 
   void cyclePlaybackMode() {
     _mode = switch (_mode) {
@@ -217,23 +221,8 @@ class MusicHandler extends BaseAudioHandler with SeekHandler {
       remainingWeights.removeAt(selected);
     }
 
-    if (_currentIndex >= 0 && _currentIndex < _localQueue.length) {
-      _shuffleOrder.remove(_currentIndex);
-      _shuffleOrder.insert(0, _currentIndex);
-    }
     _shuffleCursor = 0;
   }
-
-  // ─── Navigation ──────────────────────────────────────────────
-
-  @override
-  Future<void> skipToNext() async => next();
-
-  @override
-  Future<void> skipToPrevious() async => previous();
-
-  @override
-  Future<void> skipToQueueItem(int index) async => playFromQueue(index);
 
   Future<void> next() async {
     if (_localQueue.isEmpty) return;
@@ -279,74 +268,17 @@ class MusicHandler extends BaseAudioHandler with SeekHandler {
   }
 
   Future<void> togglePlayPause() async {
-    if (player.playing) {
-      await player.pause();
-    } else {
-      await player.play();
-    }
+    await player.playOrPause();
   }
-
-  // ─── Notification ────────────────────────────────────────────
 
   void _notify() {
-    final track = currentTrack;
-    if (track != null) {
-      mediaItem.add(MediaItem(
-        id: track.id,
-        title: track.displayTitle,
-        artist: track.displayArtist,
-      ));
-    }
-    playbackState.add(PlaybackState(
-      controls: const [
-        MediaControl.skipToPrevious,
-        MediaControl.pause,
-        MediaControl.skipToNext,
-      ],
-      systemActions: const {MediaAction.seek},
-      processingState: switch (player.processingState) {
-        ProcessingState.ready => AudioProcessingState.ready,
-        ProcessingState.buffering => AudioProcessingState.buffering,
-        ProcessingState.loading => AudioProcessingState.loading,
-        ProcessingState.completed => AudioProcessingState.completed,
-        _ => AudioProcessingState.idle,
-      },
-      playing: player.playing,
-      repeatMode: switch (_mode) {
-        PlaybackMode.noRepeat => AudioServiceRepeatMode.none,
-        PlaybackMode.repeatAll => AudioServiceRepeatMode.all,
-        PlaybackMode.repeatOne => AudioServiceRepeatMode.one,
-        PlaybackMode.shuffle => AudioServiceRepeatMode.group,
-      },
-      shuffleMode: _mode == PlaybackMode.shuffle
-          ? AudioServiceShuffleMode.all
-          : AudioServiceShuffleMode.none,
-      queueIndex: _currentIndex,
-      updatePosition: player.position,
-    ));
-    if (_localQueue.isNotEmpty) {
-      queue.add(_localQueue.map((t) => MediaItem(
-        id: t.id,
-        title: t.displayTitle,
-        artist: t.displayArtist,
-      )).toList());
-    }
-  }
-
-  @override
-  Future<dynamic> customAction(String name, [Map<String, dynamic>? extras]) async {
-    switch (name) {
-      case 'play':
-        final tracks = (extras!['tracks'] as List)
-            .map((j) => LocalTrack.fromJson(j as Map<String, dynamic>))
-            .toList();
-        final index = extras['index'] as int;
-        await playTracks(tracks, startIndex: index);
-    }
+    // Subclasses or listeners can override this.
+    // Currently used as a hook for PlaylistProvider.
   }
 
   Future<void> dispose() async {
-    _processingSub?.cancel();
+    _completedSub?.cancel();
+    _errorSub?.cancel();
     await player.dispose();
   }
 }
