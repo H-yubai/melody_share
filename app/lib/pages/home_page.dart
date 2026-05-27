@@ -49,7 +49,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-
   Future<void> _startScan() => _runScan(isQuick: true);
 
   Future<void> _startFullScan() => _runScan(isQuick: false);
@@ -80,22 +79,31 @@ class _HomePageState extends State<HomePage> {
               customPath,
               onProgress: (dir, count) {
                 if (!mounted) return;
-                setState(() { _scanDir = dir; _scanCount = count; });
+                setState(() {
+                  _scanDir = dir;
+                  _scanCount = count;
+                });
               },
             )
           : isQuick
-              ? await LocalMusicService.quickScan(
-                  onProgress: (dir, count) {
-                    if (!mounted) return;
-                    setState(() { _scanDir = dir; _scanCount = count; });
-                  },
-                )
-              : await LocalMusicService.fullScan(
-                  onProgress: (dir, count) {
-                    if (!mounted) return;
-                    setState(() { _scanDir = dir; _scanCount = count; });
-                  },
-                );
+          ? await LocalMusicService.quickScan(
+              onProgress: (dir, count) {
+                if (!mounted) return;
+                setState(() {
+                  _scanDir = dir;
+                  _scanCount = count;
+                });
+              },
+            )
+          : await LocalMusicService.fullScan(
+              onProgress: (dir, count) {
+                if (!mounted) return;
+                setState(() {
+                  _scanDir = dir;
+                  _scanCount = count;
+                });
+              },
+            );
 
       if (!mounted) return;
       context.read<PlaylistProvider>().setAllTracks(tracks);
@@ -111,11 +119,11 @@ class _HomePageState extends State<HomePage> {
         final msg = customPath != null
             ? '扫描完成，共 ${tracks.length} 首歌曲'
             : isQuick
-                ? '快速扫描完成，共 ${tracks.length} 首歌曲'
-                : '完整扫描完成，共 ${tracks.length} 首歌曲';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg)),
-        );
+            ? '快速扫描完成，共 ${tracks.length} 首歌曲'
+            : '完整扫描完成，共 ${tracks.length} 首歌曲';
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
       }
     } catch (e) {
       if (!mounted) return;
@@ -202,16 +210,29 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundColor: colorScheme.onPrimary.withValues(alpha: 0.2),
-                    child: Icon(Icons.person, color: colorScheme.onPrimary, size: 28),
+                    backgroundColor: colorScheme.onPrimary.withValues(
+                      alpha: 0.2,
+                    ),
+                    child: Icon(
+                      Icons.person,
+                      color: colorScheme.onPrimary,
+                      size: 28,
+                    ),
                   ),
                   const SizedBox(height: 12),
-                  Text('MelodyShare',
-                    style: theme.textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary)),
+                  Text(
+                    'MelodyShare',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: colorScheme.onPrimary,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(l10n.drawerSubtitle,
+                  Text(
+                    l10n.drawerSubtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onPrimary.withValues(alpha: 0.8))),
+                      color: colorScheme.onPrimary.withValues(alpha: 0.8),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -262,15 +283,24 @@ class _HomePageState extends State<HomePage> {
                       return Column(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                             child: Row(
                               children: [
-                                Icon(Icons.folder, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                                Icon(
+                                  Icons.folder,
+                                  size: 20,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
                                 const SizedBox(width: 12),
-                                Text(l10n.drawerPlaylists,
+                                Text(
+                                  l10n.drawerPlaylists,
                                   style: theme.textTheme.labelLarge?.copyWith(
                                     color: theme.colorScheme.onSurfaceVariant,
-                                  )),
+                                  ),
+                                ),
                                 const Spacer(),
                                 IconButton(
                                   icon: const Icon(Icons.add, size: 20),
@@ -286,30 +316,42 @@ class _HomePageState extends State<HomePage> {
                           ),
                           if (groupProv.groups.isEmpty)
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                              child: Text(l10n.drawerNoPlaylists,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 4,
+                              ),
+                              child: Text(
+                                l10n.drawerNoPlaylists,
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
-                                )),
+                                ),
+                              ),
                             )
                           else
-                            ...groupProv.groups.map((g) => ListTile(
-                              dense: true,
-                              leading: Icon(Icons.folder_outlined, size: 20),
-                              title: Text(g.name, style: const TextStyle(fontSize: 14)),
-                              trailing: Text('${g.trackCount}',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                )),
-                              onTap: () {
-                                Navigator.pop(ctx);
-                                context.push('/group/${g.id}');
-                              },
-                              onLongPress: () {
-                                Navigator.pop(ctx);
-                                _showRenameDeleteGroupSheet(g);
-                              },
-                            )),
+                            ...groupProv.groups.map(
+                              (g) => ListTile(
+                                dense: true,
+                                leading: Icon(Icons.folder_outlined, size: 20),
+                                title: Text(
+                                  g.name,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                trailing: Text(
+                                  '${g.trackCount}',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  context.push('/group/${g.id}');
+                                },
+                                onLongPress: () {
+                                  Navigator.pop(ctx);
+                                  _showRenameDeleteGroupSheet(g);
+                                },
+                              ),
+                            ),
                         ],
                       );
                     },
@@ -320,7 +362,9 @@ class _HomePageState extends State<HomePage> {
                       final theme = ctx.watch<ThemeProvider>();
                       return _DrawerItem(
                         icon: theme.isDark ? Icons.light_mode : Icons.dark_mode,
-                        title: theme.isDark ? l10n.drawerLightMode : l10n.drawerDarkMode,
+                        title: theme.isDark
+                            ? l10n.drawerLightMode
+                            : l10n.drawerDarkMode,
                         onTap: () {
                           Navigator.pop(ctx);
                           ctx.read<ThemeProvider>().toggle();
@@ -375,8 +419,10 @@ class _HomePageState extends State<HomePage> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(l10n.drawerLanguage,
-                style: Theme.of(ctx).textTheme.titleMedium),
+              child: Text(
+                l10n.drawerLanguage,
+                style: Theme.of(ctx).textTheme.titleMedium,
+              ),
             ),
             const Divider(),
             ListTile(
@@ -416,25 +462,27 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text('更改外观',
-                    style: Theme.of(ctx).textTheme.titleMedium),
+                  child: Text(
+                    '更改外观',
+                    style: Theme.of(ctx).textTheme.titleMedium,
+                  ),
                 ),
                 const Divider(),
-                ...options.asMap().entries.map((e) => ListTile(
-                  leading: Icon(
-                    animProv.index == e.key
-                        ? Icons.check
-                        : Icons.waves,
-                    color: animProv.index == e.key
-                        ? colorScheme.primary
-                        : null,
+                ...options.asMap().entries.map(
+                  (e) => ListTile(
+                    leading: Icon(
+                      animProv.index == e.key ? Icons.check : Icons.waves,
+                      color: animProv.index == e.key
+                          ? colorScheme.primary
+                          : null,
+                    ),
+                    title: Text('波浪 ${e.key + 1}'),
+                    onTap: () {
+                      ctx.read<AnimationProvider>().setIndex(e.key);
+                      Navigator.pop(ctx);
+                    },
                   ),
-                  title: Text('波浪 ${e.key + 1}'),
-                  onTap: () {
-                    ctx.read<AnimationProvider>().setIndex(e.key);
-                    Navigator.pop(ctx);
-                  },
-                )),
+                ),
                 const SizedBox(height: 8),
               ],
             ),
@@ -456,42 +504,58 @@ class _HomePageState extends State<HomePage> {
         final l10n = AppLocalizations.of(context)!;
         final allTracks = playlist.allTracks;
         final filteredTracks = _selectedGroupId != null
-            ? allTracks.where((t) => groupProv.getTrackIds(_selectedGroupId!).contains(t.id)).toList()
+            ? allTracks
+                  .where(
+                    (t) =>
+                        groupProv.getTrackIds(_selectedGroupId!).contains(t.id),
+                  )
+                  .toList()
             : allTracks;
         final searchedTracks = _searchQuery.isEmpty
             ? filteredTracks
-            : filteredTracks.where((t) =>
-                t.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                t.artist.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+            : filteredTracks
+                  .where(
+                    (t) =>
+                        t.title.toLowerCase().contains(
+                          _searchQuery.toLowerCase(),
+                        ) ||
+                        t.artist.toLowerCase().contains(
+                          _searchQuery.toLowerCase(),
+                        ),
+                  )
+                  .toList();
 
         if (_isScanning) {
           final scanPath = _scanDir;
-          final dirName = scanPath.isNotEmpty
-              ? scanPath.split('/').last
-              : '';
-          return Center(child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(l10n.homeScanning),
-              const SizedBox(height: 8),
-              Text(_scanCount > 0 ? '已找到 $_scanCount 首' : '',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.primary,
-                )),
-              if (dirName.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text(dirName,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          final dirName = scanPath.isNotEmpty ? scanPath.split('/').last : '';
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(l10n.homeScanning),
+                const SizedBox(height: 8),
+                Text(
+                  _scanCount > 0 ? '已找到 $_scanCount 首' : '',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: colorScheme.primary),
                 ),
+                if (dirName.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    dirName,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ],
-            ],
-          ));
+            ),
+          );
         }
 
         if (_error != null) {
@@ -530,7 +594,11 @@ class _HomePageState extends State<HomePage> {
                       shape: BoxShape.circle,
                       color: colorScheme.primaryContainer,
                     ),
-                    child: Icon(Icons.music_note, size: 44, color: colorScheme.primary),
+                    child: Icon(
+                      Icons.music_note,
+                      size: 44,
+                      color: colorScheme.primary,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Text(l10n.homeEmptyTitle, style: theme.textTheme.titleLarge),
@@ -604,7 +672,9 @@ class _HomePageState extends State<HomePage> {
                             child: Card(
                               elevation: isCurrent ? 2 : 0,
                               color: isCurrent
-                                  ? colorScheme.primaryContainer.withValues(alpha: 0.3)
+                                  ? colorScheme.primaryContainer.withValues(
+                                      alpha: 0.3,
+                                    )
                                   : colorScheme.surface,
                               child: ListTile(
                                 leading: CircleAvatar(
@@ -612,7 +682,9 @@ class _HomePageState extends State<HomePage> {
                                       ? colorScheme.primary
                                       : colorScheme.surfaceContainerHighest,
                                   child: Icon(
-                                    isCurrent ? Icons.music_note : Icons.audiotrack,
+                                    isCurrent
+                                        ? Icons.music_note
+                                        : Icons.audiotrack,
                                     color: isCurrent
                                         ? colorScheme.onPrimary
                                         : colorScheme.onSurfaceVariant,
@@ -624,8 +696,12 @@ class _HomePageState extends State<HomePage> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontWeight: isCurrent ? FontWeight.w600 : null,
-                                    color: isCurrent ? colorScheme.primary : null,
+                                    fontWeight: isCurrent
+                                        ? FontWeight.w600
+                                        : null,
+                                    color: isCurrent
+                                        ? colorScheme.primary
+                                        : null,
                                   ),
                                 ),
                                 subtitle: Row(
@@ -638,22 +714,31 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                     ),
                                     if (isCurrent) ...[
-                                      Icon(Icons.equalizer, color: colorScheme.primary, size: 16),
+                                      Icon(
+                                        Icons.equalizer,
+                                        color: colorScheme.primary,
+                                        size: 16,
+                                      ),
                                       const SizedBox(width: 4),
                                     ],
                                     if (track.displayDuration.isNotEmpty) ...[
                                       const SizedBox(width: 8),
                                       Text(
                                         track.displayDuration,
-                                        style: theme.textTheme.bodySmall?.copyWith(
-                                          color: colorScheme.onSurfaceVariant,
-                                        ),
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color:
+                                                  colorScheme.onSurfaceVariant,
+                                            ),
                                       ),
                                     ],
                                   ],
                                 ),
                                 onTap: () {
-                                  playlist.playTracks(searchedTracks, startIndex: index);
+                                  playlist.playTracks(
+                                    searchedTracks,
+                                    startIndex: index,
+                                  );
                                   context.push('/player');
                                 },
                               ),
@@ -679,7 +764,10 @@ class _HomePageState extends State<HomePage> {
           prefixIcon: const Icon(Icons.search),
           border: const OutlineInputBorder(),
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 10,
+            horizontal: 12,
+          ),
         ),
         onChanged: _onSearchChanged,
       ),
@@ -713,7 +801,10 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
                   children: [
-                    Icon(Icons.arrow_drop_down, color: colorScheme.onSurfaceVariant),
+                    Icon(
+                      Icons.arrow_drop_down,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
@@ -736,7 +827,13 @@ class _HomePageState extends State<HomePage> {
               final playlist = context.read<PlaylistProvider>();
               final allTracks = playlist.allTracks;
               final tracks = _selectedGroupId != null
-                  ? allTracks.where((t) => groupProv.getTrackIds(_selectedGroupId!).contains(t.id)).toList()
+                  ? allTracks
+                        .where(
+                          (t) => groupProv
+                              .getTrackIds(_selectedGroupId!)
+                              .contains(t.id),
+                        )
+                        .toList()
                   : allTracks;
               if (tracks.isNotEmpty) {
                 playlist.playTracks(tracks);
@@ -786,7 +883,10 @@ class _HomePageState extends State<HomePage> {
                         prefixIcon: const Icon(Icons.search),
                         border: const OutlineInputBorder(),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 12,
+                        ),
                       ),
                       onChanged: (v) => setSheetState(() => searchQuery = v),
                     ),
@@ -796,10 +896,14 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(width: 8),
                       TextButton.icon(
                         icon: Icon(
-                          sortMode == 0 ? Icons.sort_by_alpha : Icons.music_note,
+                          sortMode == 0
+                              ? Icons.sort_by_alpha
+                              : Icons.music_note,
                           size: 18,
                         ),
-                        label: Text(sortMode == 0 ? l10n.sortByName : l10n.sortByCount),
+                        label: Text(
+                          sortMode == 0 ? l10n.sortByName : l10n.sortByCount,
+                        ),
                         onPressed: () => setSheetState(() {
                           sortMode = sortMode == 0 ? 1 : 0;
                         }),
@@ -819,18 +923,20 @@ class _HomePageState extends State<HomePage> {
                       Navigator.pop(ctx);
                     },
                   ),
-                  ...groups.map((g) => ListTile(
-                    leading: Icon(
-                      _selectedGroupId == g.id ? Icons.check : null,
-                      color: colorScheme.primary,
+                  ...groups.map(
+                    (g) => ListTile(
+                      leading: Icon(
+                        _selectedGroupId == g.id ? Icons.check : null,
+                        color: colorScheme.primary,
+                      ),
+                      title: Text(g.name),
+                      subtitle: Text(l10n.playerTracksCount(g.trackCount)),
+                      onTap: () {
+                        setState(() => _selectedGroupId = g.id);
+                        Navigator.pop(ctx);
+                      },
                     ),
-                    title: Text(g.name),
-                    subtitle: Text(l10n.playerTracksCount(g.trackCount)),
-                    onTap: () {
-                      setState(() => _selectedGroupId = g.id);
-                      Navigator.pop(ctx);
-                    },
-                  )),
+                  ),
                   const SizedBox(height: 8),
                 ],
               ),
@@ -907,7 +1013,10 @@ class _HomePageState extends State<HomePage> {
                         ),
                         onSubmitted: (v) {
                           if (v.trim().isNotEmpty) {
-                            context.read<GroupProvider>().rename(group.id, v.trim());
+                            context.read<GroupProvider>().rename(
+                              group.id,
+                              v.trim(),
+                            );
                             Navigator.pop(ctx2);
                           }
                         },
@@ -920,7 +1029,10 @@ class _HomePageState extends State<HomePage> {
                         FilledButton(
                           onPressed: () {
                             if (controller.text.trim().isNotEmpty) {
-                              context.read<GroupProvider>().rename(group.id, controller.text.trim());
+                              context.read<GroupProvider>().rename(
+                                group.id,
+                                controller.text.trim(),
+                              );
                               Navigator.pop(ctx2);
                             }
                           },
@@ -932,8 +1044,14 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
-                title: Text(l10n.delete, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                leading: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
+                  l10n.delete,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   showDialog(
@@ -948,7 +1066,9 @@ class _HomePageState extends State<HomePage> {
                         ),
                         FilledButton(
                           style: FilledButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.error,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
                           ),
                           onPressed: () {
                             context.read<GroupProvider>().delete(group.id);
@@ -973,17 +1093,17 @@ class _HomePageState extends State<HomePage> {
     final groupProv = context.read<GroupProvider>();
     final playlist = context.read<PlaylistProvider>();
     final groupName = _selectedGroupId != null
-        ? groupProv.groups
-            .firstWhere((g) => g.id == _selectedGroupId)
-            .name
+        ? groupProv.groups.firstWhere((g) => g.id == _selectedGroupId).name
         : null;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.delete),
-        content: Text(groupName != null
-            ? l10n.homeRemoveTrackFromGroup(groupName)
-            : l10n.homeRemoveTrackConfirmAll),
+        content: Text(
+          groupName != null
+              ? l10n.homeRemoveTrackFromGroup(groupName)
+              : l10n.homeRemoveTrackConfirmAll,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -1023,24 +1143,28 @@ class _HomePageState extends State<HomePage> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(l10n.homeAddToPlaylist,
-                style: Theme.of(ctx).textTheme.titleMedium),
+              child: Text(
+                l10n.homeAddToPlaylist,
+                style: Theme.of(ctx).textTheme.titleMedium,
+              ),
             ),
             const Divider(),
-            ...groupProv.groups.map((g) => ListTile(
-              leading: const Icon(Icons.folder_outlined),
-              title: Text(g.name),
-              onTap: () {
-                groupProv.addTrack(g.id, track);
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.homeAddedToGroup(g.name)),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-            )),
+            ...groupProv.groups.map(
+              (g) => ListTile(
+                leading: const Icon(Icons.folder_outlined),
+                title: Text(g.name),
+                onTap: () {
+                  groupProv.addTrack(g.id, track);
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.homeAddedToGroup(g.name)),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              ),
+            ),
             if (groupProv.groups.isEmpty)
               Padding(
                 padding: const EdgeInsets.all(16),
@@ -1159,7 +1283,10 @@ class _MiniPlayer extends StatelessWidget {
                 builder: (context, snap2) {
                   final dur = snap2.data ?? Duration.zero;
                   final ratio = dur.inMilliseconds > 0
-                      ? (pos.inMilliseconds / dur.inMilliseconds).clamp(0.0, 1.0)
+                      ? (pos.inMilliseconds / dur.inMilliseconds).clamp(
+                          0.0,
+                          1.0,
+                        )
                       : 0.0;
                   return LinearProgressIndicator(
                     value: ratio,
@@ -1172,7 +1299,12 @@ class _MiniPlayer extends StatelessWidget {
             },
           ),
           Container(
-            padding: const EdgeInsets.only(left: 16, right: 4, top: 8, bottom: 8),
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 4,
+              top: 8,
+              bottom: 8,
+            ),
             decoration: BoxDecoration(
               color: colorScheme.surface,
               border: Border(
@@ -1188,7 +1320,11 @@ class _MiniPlayer extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     color: colorScheme.primaryContainer,
                   ),
-                  child: Icon(Icons.music_note, color: colorScheme.primary, size: 22),
+                  child: Icon(
+                    Icons.music_note,
+                    color: colorScheme.primary,
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1202,7 +1338,9 @@ class _MiniPlayer extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
                       Text(
-                        track.displayArtist.isEmpty ? l10n.unknownArtist : track.displayArtist,
+                        track.displayArtist.isEmpty
+                            ? l10n.unknownArtist
+                            : track.displayArtist,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -1214,7 +1352,10 @@ class _MiniPlayer extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.skip_previous_rounded, color: colorScheme.primary),
+                  icon: Icon(
+                    Icons.skip_previous_rounded,
+                    color: colorScheme.primary,
+                  ),
                   onPressed: () => playlist.previous(),
                 ),
                 StreamBuilder<bool>(
@@ -1223,7 +1364,9 @@ class _MiniPlayer extends StatelessWidget {
                     final playing = snap.data ?? false;
                     return IconButton(
                       icon: Icon(
-                        playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                        playing
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
                         color: colorScheme.primary,
                       ),
                       onPressed: () => playlist.togglePlayPause(),
@@ -1231,7 +1374,10 @@ class _MiniPlayer extends StatelessWidget {
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.skip_next_rounded, color: colorScheme.primary),
+                  icon: Icon(
+                    Icons.skip_next_rounded,
+                    color: colorScheme.primary,
+                  ),
                   onPressed: () => playlist.next(),
                 ),
               ],

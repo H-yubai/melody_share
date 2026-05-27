@@ -69,7 +69,10 @@ class _PlayerPageState extends State<PlayerPage> {
                     ),
                     centerTitle: true,
                     leading: IconButton(
-                      icon: Icon(Icons.keyboard_arrow_down, color: colorScheme.onSurface),
+                      icon: Icon(
+                        Icons.keyboard_arrow_down,
+                        color: colorScheme.onSurface,
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
@@ -84,10 +87,14 @@ class _PlayerPageState extends State<PlayerPage> {
                             height: 260,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20),
-                              color: colorScheme.primaryContainer.withValues(alpha: 0.5),
+                              color: colorScheme.primaryContainer.withValues(
+                                alpha: 0.5,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: colorScheme.primary.withValues(alpha: 0.2),
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.2,
+                                  ),
                                   blurRadius: 30,
                                   offset: const Offset(0, 10),
                                 ),
@@ -109,9 +116,8 @@ class _PlayerPageState extends State<PlayerPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 32),
                           child: Text(
                             track.displayTitle,
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -121,10 +127,11 @@ class _PlayerPageState extends State<PlayerPage> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 32),
                           child: Text(
-                            track.displayArtist.isEmpty ? l10n.unknownArtist : track.displayArtist,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
+                            track.displayArtist.isEmpty
+                                ? l10n.unknownArtist
+                                : track.displayArtist,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
                             textAlign: TextAlign.center,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -142,46 +149,73 @@ class _PlayerPageState extends State<PlayerPage> {
                               builder: (context, snap2) {
                                 final dur = snap2.data ?? Duration.zero;
                                 return Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                  ),
                                   child: Column(
                                     children: [
                                       SliderTheme(
                                         data: SliderTheme.of(context).copyWith(
                                           trackHeight: 4,
-                                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                                          overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+                                          thumbShape:
+                                              const RoundSliderThumbShape(
+                                                enabledThumbRadius: 6,
+                                              ),
+                                          overlayShape:
+                                              const RoundSliderOverlayShape(
+                                                overlayRadius: 16,
+                                              ),
                                           activeTrackColor: colorScheme.primary,
-                                          inactiveTrackColor: colorScheme.surfaceContainerHighest,
+                                          inactiveTrackColor: colorScheme
+                                              .surfaceContainerHighest,
                                           thumbColor: colorScheme.primary,
-                                          overlayColor: colorScheme.primary.withValues(alpha: 0.12),
+                                          overlayColor: colorScheme.primary
+                                              .withValues(alpha: 0.12),
                                         ),
                                         child: Slider(
                                           value: dur.inMilliseconds > 0
-                                              ? (pos.inMilliseconds / dur.inMilliseconds).clamp(0.0, 1.0)
+                                              ? (pos.inMilliseconds /
+                                                        dur.inMilliseconds)
+                                                    .clamp(0.0, 1.0)
                                               : 0,
                                           onChanged: (v) {
-                                            playlist.seek(Duration(
-                                              milliseconds: (v * dur.inMilliseconds).round(),
-                                            ));
+                                            playlist.seek(
+                                              Duration(
+                                                milliseconds:
+                                                    (v * dur.inMilliseconds)
+                                                        .round(),
+                                              ),
+                                            );
                                           },
                                         ),
                                       ),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 4,
+                                        ),
                                         child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
                                               _formatDuration(pos),
-                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                color: colorScheme.onSurfaceVariant,
-                                              ),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    color: colorScheme
+                                                        .onSurfaceVariant,
+                                                  ),
                                             ),
                                             Text(
                                               _formatDuration(dur),
-                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                color: colorScheme.onSurfaceVariant,
-                                              ),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    color: colorScheme
+                                                        .onSurfaceVariant,
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -208,19 +242,14 @@ class _PlayerPageState extends State<PlayerPage> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: colorScheme.primary,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: colorScheme.primary.withValues(alpha: 0.3),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
                               ),
                               child: IconButton(
                                 iconSize: 36,
                                 padding: const EdgeInsets.all(16),
                                 icon: Icon(
-                                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                  isPlaying
+                                      ? Icons.pause_rounded
+                                      : Icons.play_arrow_rounded,
                                   color: colorScheme.onPrimary,
                                 ),
                                 onPressed: () => playlist.togglePlayPause(),
@@ -239,15 +268,26 @@ class _PlayerPageState extends State<PlayerPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _ModeButton(playlist: playlist, colorScheme: colorScheme),
+                            _ModeButton(
+                              playlist: playlist,
+                              colorScheme: colorScheme,
+                            ),
                             const SizedBox(width: 16),
-                            _RatingButton(playlist: playlist, colorScheme: colorScheme),
+                            _RatingButton(
+                              playlist: playlist,
+                              colorScheme: colorScheme,
+                            ),
                             const SizedBox(width: 16),
                             IconButton(
                               iconSize: 28,
-                              constraints: const BoxConstraints(minWidth: 56, minHeight: 56),
-                              icon: Icon(Icons.queue_music_rounded,
-                                  color: colorScheme.onSurfaceVariant),
+                              constraints: const BoxConstraints(
+                                minWidth: 56,
+                                minHeight: 56,
+                              ),
+                              icon: Icon(
+                                Icons.queue_music_rounded,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                               onPressed: () => _showQueue(context),
                             ),
                           ],
@@ -290,36 +330,53 @@ class _PlayerPageState extends State<PlayerPage> {
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Row(
                     children: [
-                      Text(l10n.playerQueue,
-                        style: Theme.of(ctx).textTheme.titleMedium),
+                      Text(
+                        l10n.playerQueue,
+                        style: Theme.of(ctx).textTheme.titleMedium,
+                      ),
                       const Spacer(),
-                      Text(l10n.playerTracksCount(queue.length),
+                      Text(
+                        l10n.playerTracksCount(queue.length),
                         style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant)),
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                       if (queue.isNotEmpty) ...[
                         const SizedBox(width: 8),
                         TextButton(
                           onPressed: () {
                             final idx = currentIdx;
-                            if (idx != null && idx >= 0 && scrollController.hasClients) {
+                            if (idx != null &&
+                                idx >= 0 &&
+                                scrollController.hasClients) {
                               const tileHeight = 60.0;
-                              final viewport = scrollController.position.viewportDimension;
-                              final offset = idx * tileHeight - (viewport - tileHeight) / 2;
+                              final viewport =
+                                  scrollController.position.viewportDimension;
+                              final offset =
+                                  idx * tileHeight -
+                                  (viewport - tileHeight) / 2;
                               scrollController.animateTo(
-                                offset.clamp(0.0, scrollController.position.maxScrollExtent),
+                                offset.clamp(
+                                  0.0,
+                                  scrollController.position.maxScrollExtent,
+                                ),
                                 duration: const Duration(milliseconds: 300),
                                 curve: Curves.easeInOut,
                               );
                             }
                           },
-                          child: Text('当前',
-                            style: TextStyle(color: colorScheme.primary)),
+                          child: Text(
+                            '当前',
+                            style: TextStyle(color: colorScheme.primary),
+                          ),
                         ),
                         const SizedBox(width: 4),
                         TextButton(
                           onPressed: () => playlist.clearQueue(),
-                          child: Text(l10n.playerClear,
-                            style: TextStyle(color: colorScheme.error)),
+                          child: Text(
+                            l10n.playerClear,
+                            style: TextStyle(color: colorScheme.error),
+                          ),
                         ),
                       ],
                     ],
@@ -329,8 +386,13 @@ class _PlayerPageState extends State<PlayerPage> {
                 Expanded(
                   child: queue.isEmpty
                       ? Center(
-                          child: Text(l10n.playerQueueEmpty,
-                            style: TextStyle(color: colorScheme.onSurfaceVariant)))
+                          child: Text(
+                            l10n.playerQueueEmpty,
+                            style: TextStyle(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        )
                       : ListView.builder(
                           controller: scrollController,
                           itemCount: queue.length,
@@ -339,7 +401,9 @@ class _PlayerPageState extends State<PlayerPage> {
                             final isCurrent = i == currentIdx;
                             return ListTile(
                               tileColor: isCurrent
-                                  ? colorScheme.primaryContainer.withValues(alpha: 0.3)
+                                  ? colorScheme.primaryContainer.withValues(
+                                      alpha: 0.3,
+                                    )
                                   : null,
                               dense: true,
                               leading: Icon(
@@ -349,37 +413,49 @@ class _PlayerPageState extends State<PlayerPage> {
                                     ? colorScheme.primary
                                     : colorScheme.onSurfaceVariant,
                               ),
-                              title: Text(t.displayTitle,
+                              title: Text(
+                                t.displayTitle,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: isCurrent ? colorScheme.primary : null,
-                                  fontWeight: isCurrent ? FontWeight.w600 : null,
+                                  fontWeight: isCurrent
+                                      ? FontWeight.w600
+                                      : null,
                                 ),
                               ),
                               subtitle: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Expanded(
-                                    child: Text(t.displayArtist,
+                                    child: Text(
+                                      t.displayArtist,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: colorScheme.onSurfaceVariant)),
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
                                   ),
                                   if (t.displayDuration.isNotEmpty)
-                                    Text(t.displayDuration,
+                                    Text(
+                                      t.displayDuration,
                                       style: TextStyle(
                                         fontSize: 12,
                                         height: 1.0,
-                                        color: colorScheme.onSurfaceVariant)),
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
                                 ],
                               ),
                               trailing: IconButton(
-                                icon: Icon(Icons.close, size: 18,
-                                    color: colorScheme.onSurfaceVariant),
+                                icon: Icon(
+                                  Icons.close,
+                                  size: 18,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
                                 onPressed: () => playlist.removeFromQueue(i),
                               ),
                               onTap: () {
@@ -447,7 +523,6 @@ class _RatingButtonState extends State<_RatingButton>
   int _rating = 0;
   int _animKey = 0;
   bool _hovered = false;
-  bool _longPressFired = false;
   late final AnimationController _bounceCtrl;
   late final Animation<double> _bounceAnim;
 
@@ -510,64 +585,61 @@ class _RatingButtonState extends State<_RatingButton>
     });
   }
 
+  Color _heartColor() {
+    switch (_rating) {
+      case 1:
+        return Colors.red.withValues(alpha: 0.4);
+      case 2:
+        return Colors.red.withValues(alpha: 0.7);
+      case 3:
+        return Colors.red;
+      default:
+        return widget.colorScheme.onSurfaceVariant;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final filled = _rating > 0;
-    return GestureDetector(
+    final heartColor = _heartColor();
+    return InkWell(
       onTap: _increment,
-      onLongPressStart: (_) {
-        _longPressFired = false;
-        Future.delayed(const Duration(milliseconds: 1000), () {
-          if (_longPressFired) return;
-          _longPressFired = true;
-          _setMax();
-        });
-      },
-      onLongPressEnd: (_) {
-        _longPressFired = true;
-      },
-      onLongPressCancel: () {
-        _longPressFired = true;
-      },
-      child: ScaleTransition(
-        scale: _bounceAnim,
-        child: MouseRegion(
-          onEnter: (_) => setState(() => _hovered = true),
-          onExit: (_) => setState(() => _hovered = false),
-          child: Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _hovered ? Theme.of(context).hoverColor : Colors.transparent,
-            ),
-            padding: const EdgeInsets.all(8),
+      onLongPress: _setMax,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: ScaleTransition(
+          scale: _bounceAnim,
+          child: SizedBox(
+            width: 64,
+            height: 64,
             child: Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _hovered
+                        ? Theme.of(context).hoverColor
+                        : Colors.transparent,
+                  ),
+                ),
                 Icon(
                   filled ? Icons.favorite : Icons.favorite_border,
-                  color: filled ? Colors.red : widget.colorScheme.onSurfaceVariant,
-                  size: 28,
+                  color: heartColor,
+                  size: 32,
                 ),
                 if (filled)
                   Lottie.asset(
                     'assets/animations/lottie/like.json',
                     key: ValueKey('like_$_animKey'),
-                    width: 48,
-                    height: 48,
+                    width: 56,
+                    height: 56,
                     repeat: false,
                     animate: true,
-                  ),
-                if (filled)
-                  Text(
-                    '$_rating',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
                   ),
               ],
             ),
