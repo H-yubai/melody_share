@@ -31,8 +31,7 @@ class MusicHandler {
     _completedSub = player.stream.completed.listen((completed) {
       if (completed) next();
     });
-    player.stream.playing.listen((playing) {
-      _notificationService?.setPlaying(playing);
+    player.stream.playing.listen((_) {
       _notify();
     });
     _errorSub = player.stream.error.listen((err) {
@@ -128,6 +127,7 @@ class MusicHandler {
     if (player.state.playing) return;
     if (_currentIndex >= 0 && _currentIndex < _localQueue.length) {
       await player.play();
+      _notificationService?.setPlaying(true);
     } else if (_allTracks.isNotEmpty) {
       await playFromAll(0);
     }
@@ -135,6 +135,7 @@ class MusicHandler {
 
   Future<void> pause() async {
     await player.pause();
+    _notificationService?.setPlaying(false);
   }
 
   Future<void> stop() async {
@@ -273,6 +274,7 @@ class MusicHandler {
         if (_currentIndex >= _localQueue.length - 1) {
           await player.pause();
           await player.seek(Duration.zero);
+          _notificationService?.setPlaying(false);
         } else {
           await playFromQueue(_currentIndex + 1);
         }
@@ -299,7 +301,11 @@ class MusicHandler {
   }
 
   Future<void> togglePlayPause() async {
-    await player.playOrPause();
+    if (player.state.playing) {
+      await pause();
+    } else {
+      await play();
+    }
   }
 
   void _notify() {
