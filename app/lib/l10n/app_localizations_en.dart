@@ -193,4 +193,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeTrackRemoved => 'Track removed';
+
+  @override
+  String get homeCreateFailed => 'Create failed';
 }

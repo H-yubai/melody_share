@@ -6,8 +6,8 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/group.dart';
 import '../models/local_track.dart';
-import '../services/animation_provider.dart';
 import '../services/database_service.dart';
+import 'animation_picker_page.dart';
 import '../services/group_provider.dart';
 import '../services/local_music_service.dart';
 import '../services/locale_provider.dart';
@@ -449,46 +449,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showAppearanceSheet() {
-    final colorScheme = Theme.of(context).colorScheme;
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) {
-          final animProv = ctx.watch<AnimationProvider>();
-          final options = ['wave1', 'wave2', 'wave3'];
-          return SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(
-                    '更改外观',
-                    style: Theme.of(ctx).textTheme.titleMedium,
-                  ),
-                ),
-                const Divider(),
-                ...options.asMap().entries.map(
-                  (e) => ListTile(
-                    leading: Icon(
-                      animProv.index == e.key ? Icons.check : Icons.waves,
-                      color: animProv.index == e.key
-                          ? colorScheme.primary
-                          : null,
-                    ),
-                    title: Text('波浪 ${e.key + 1}'),
-                    onTap: () {
-                      ctx.read<AnimationProvider>().setIndex(e.key);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          );
-        },
-      ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AnimationPickerPage()),
     );
   }
 
@@ -973,10 +936,18 @@ class _HomePageState extends State<HomePage> {
             child: Text(l10n.cancel),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               if (controller.text.trim().isNotEmpty) {
-                context.read<GroupProvider>().create(controller.text.trim());
-                Navigator.pop(ctx);
+                try {
+                  await context.read<GroupProvider>().create(controller.text.trim());
+                  if (ctx.mounted) Navigator.pop(ctx);
+                } catch (_) {
+                  if (ctx.mounted) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(content: Text(l10n.homeCreateFailed)),
+                    );
+                  }
+                }
               }
             },
             child: Text(l10n.create),

@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart' as ffi;
 
 import '../models/group.dart';
 import '../models/local_track.dart';
@@ -15,9 +18,11 @@ class DatabaseService {
   }
 
   static Future<Database> _open() async {
-    if (!kIsWeb) {
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
+    // Use sqflite_common_ffi only on desktop (Windows, macOS, Linux)
+    // On Android/iOS the platform sqflite works out of the box
+    if (!kIsWeb && !Platform.isAndroid && !Platform.isIOS) {
+      ffi.sqfliteFfiInit();
+      databaseFactory = ffi.databaseFactoryFfi;
     }
     final dbPath = await getDatabasesPath();
     final path = p.join(dbPath, 'melody_share.db');

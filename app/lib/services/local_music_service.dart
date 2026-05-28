@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../models/local_track.dart';
+import 'media_store_scanner.dart';
 
 class LocalMusicService {
   LocalMusicService._();
@@ -22,9 +23,16 @@ class LocalMusicService {
     if (kIsWeb) return false;
     if (!Platform.isAndroid) return true;
 
-    if (await Permission.manageExternalStorage.request().isGranted) return true;
+    // Android 13+ (API 33+): granular media permission
     if (await Permission.audio.request().isGranted) return true;
+
+    // Android 12 and below (API 32-): legacy storage permission
     if (await Permission.storage.request().isGranted) return true;
+
+    // Last resort: all files access (Android 11+, needs manual grant in settings)
+    // Required for Directory.list() to work on Android 11+
+    if (await Permission.manageExternalStorage.request().isGranted) return true;
+
     return false;
   }
 
@@ -35,11 +43,20 @@ class LocalMusicService {
     final paths = <String>{};
 
     if (Platform.isAndroid) {
-      paths.addAll(['/storage/emulated/0/Music', '/storage/emulated/0/Download']);
       try {
-        final list = await getExternalStorageDirectories(type: StorageDirectory.music);
-        if (list != null) {
-            for (final d in list) { paths.add(d.path); }
+        final musicDirs = await getExternalStorageDirectories(type: StorageDirectory.music);
+        if (musicDirs != null) {
+          for (final d in musicDirs) {
+            paths.add(d.path);
+          }
+        }
+      } catch (_) {}
+      try {
+        final downloadDirs = await getExternalStorageDirectories(type: StorageDirectory.downloads);
+        if (downloadDirs != null) {
+          for (final d in downloadDirs) {
+            paths.add(d.path);
+          }
         }
       } catch (_) {}
     } else if (Platform.isWindows) {
@@ -68,6 +85,10 @@ class LocalMusicService {
           await _scanQuick(Directory(path), result, onProgress);
         }
       } catch (_) {}
+    }
+
+    if (Platform.isAndroid) {
+      await _appendMediaStore(result, onProgress);
     }
 
     return result;
@@ -106,11 +127,14 @@ class LocalMusicService {
     final paths = <String>{};
 
     if (Platform.isAndroid) {
-      for (final type in StorageDirectory.values) {
+      // Scan from the root of each external storage volume
+      for (final type in [StorageDirectory.music, StorageDirectory.podcasts, StorageDirectory.downloads]) {
         try {
-          final list = await getExternalStorageDirectories(type: type);
-          if (list != null) {
-          for (final d in list) { paths.add(d.path); }
+          final dirs = await getExternalStorageDirectories(type: type);
+          if (dirs != null && dirs.isNotEmpty) {
+            for (final d in dirs) {
+              paths.add(d.parent.path);
+            }
           }
         } catch (_) {}
       }
@@ -129,6 +153,10 @@ class LocalMusicService {
           await _scanDeep(Directory(path), result, onProgress);
         }
       } catch (_) {}
+    }
+
+    if (Platform.isAndroid) {
+      await _appendMediaStore(result, onProgress);
     }
 
     return result;
@@ -157,6 +185,19 @@ class LocalMusicService {
             onProgress?.call(entity.path, result.length);
             await _scanDeep(entity, result, onProgress);
           }
+        }
+      }
+    } catch (_) {}
+  }
+
+  static Future<void> _appendMediaStore(List<LocalTrack> result,
+      void Function(String, int)? onProgress) async {
+    try {
+      final existing = result.map((t) => t.filePath).toSet();
+      final mediaTracks = await MediaStoreScanner.scanAudio(onProgress: onProgress);
+      for (final t in mediaTracks) {
+        if (!existing.contains(t.filePath)) {
+          result.add(t);
         }
       }
     } catch (_) {}

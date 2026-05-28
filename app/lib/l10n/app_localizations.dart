@@ -445,6 +445,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Track removed'**
   String get homeTrackRemoved;
+
+  /// No description provided for @homeCreateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Create failed'**
+  String get homeCreateFailed;
 }
 
 class _AppLocalizationsDelegate

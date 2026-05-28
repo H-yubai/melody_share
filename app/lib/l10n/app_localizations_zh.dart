@@ -191,4 +191,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeTrackRemoved => '已移出曲目';
+
+  @override
+  String get homeCreateFailed => '创建失败';
 }
