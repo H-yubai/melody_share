@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:toastification/toastification.dart';
 import '../l10n/app_localizations.dart';
 import '../models/group.dart';
 import '../models/local_track.dart';
@@ -121,9 +122,12 @@ class _HomePageState extends State<HomePage> {
             : isQuick
             ? '快速扫描完成，共 ${tracks.length} 首歌曲'
             : '完整扫描完成，共 ${tracks.length} 首歌曲';
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(msg)));
+        toastification.show(
+          context: context,
+          title: Text(msg),
+          type: ToastificationType.success,
+          autoCloseDuration: const Duration(seconds: 3),
+        );
       }
     } catch (e) {
       if (!mounted) return;
@@ -923,10 +927,27 @@ class _HomePageState extends State<HomePage> {
             hintText: l10n.playlistName,
             border: const OutlineInputBorder(),
           ),
-          onSubmitted: (v) {
-            if (v.trim().isNotEmpty) {
-              context.read<GroupProvider>().create(v.trim());
+          onSubmitted: (v) async {
+            if (v.trim().isEmpty) return;
+            final provider = context.read<GroupProvider>();
+            try {
+              await provider.create(v.trim());
+              if (!ctx.mounted) return;
               Navigator.pop(ctx);
+              toastification.show(
+                context: ctx,
+                title: Text(l10n.homeCreateSuccess),
+                type: ToastificationType.success,
+                autoCloseDuration: const Duration(seconds: 2),
+              );
+            } catch (_) {
+              if (!ctx.mounted) return;
+              toastification.show(
+                context: ctx,
+                title: Text(l10n.homeCreateFailed),
+                type: ToastificationType.error,
+                autoCloseDuration: const Duration(seconds: 3),
+              );
             }
           },
         ),
@@ -937,17 +958,26 @@ class _HomePageState extends State<HomePage> {
           ),
           FilledButton(
             onPressed: () async {
-              if (controller.text.trim().isNotEmpty) {
-                try {
-                  await context.read<GroupProvider>().create(controller.text.trim());
-                  if (ctx.mounted) Navigator.pop(ctx);
-                } catch (_) {
-                  if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      SnackBar(content: Text(l10n.homeCreateFailed)),
-                    );
-                  }
-                }
+              if (controller.text.trim().isEmpty) return;
+              final provider = context.read<GroupProvider>();
+              try {
+                await provider.create(controller.text.trim());
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                toastification.show(
+                  context: ctx,
+                  title: Text(l10n.homeCreateSuccess),
+                  type: ToastificationType.success,
+                  autoCloseDuration: const Duration(seconds: 2),
+                );
+              } catch (_) {
+                if (!ctx.mounted) return;
+                toastification.show(
+                  context: ctx,
+                  title: Text(l10n.homeCreateFailed),
+                  type: ToastificationType.error,
+                  autoCloseDuration: const Duration(seconds: 3),
+                );
               }
             },
             child: Text(l10n.create),
@@ -982,13 +1012,27 @@ class _HomePageState extends State<HomePage> {
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                         ),
-                        onSubmitted: (v) {
-                          if (v.trim().isNotEmpty) {
-                            context.read<GroupProvider>().rename(
-                              group.id,
-                              v.trim(),
-                            );
+                        onSubmitted: (v) async {
+                          if (v.trim().isEmpty) return;
+                          final provider = context.read<GroupProvider>();
+                          try {
+                            await provider.rename(group.id, v.trim());
+                            if (!ctx2.mounted) return;
                             Navigator.pop(ctx2);
+                            toastification.show(
+                              context: ctx2,
+                              title: Text(l10n.homeRenameSuccess),
+                              type: ToastificationType.success,
+                              autoCloseDuration: const Duration(seconds: 2),
+                            );
+                          } catch (_) {
+                            if (!ctx2.mounted) return;
+                            toastification.show(
+                              context: ctx2,
+                              title: Text(l10n.homeRenameFailed),
+                              type: ToastificationType.error,
+                              autoCloseDuration: const Duration(seconds: 3),
+                            );
                           }
                         },
                       ),
@@ -998,13 +1042,30 @@ class _HomePageState extends State<HomePage> {
                           child: Text(l10n.cancel),
                         ),
                         FilledButton(
-                          onPressed: () {
-                            if (controller.text.trim().isNotEmpty) {
-                              context.read<GroupProvider>().rename(
+                          onPressed: () async {
+                            if (controller.text.trim().isEmpty) return;
+                            final provider = context.read<GroupProvider>();
+                            try {
+                              await provider.rename(
                                 group.id,
                                 controller.text.trim(),
                               );
+                              if (!ctx2.mounted) return;
                               Navigator.pop(ctx2);
+                              toastification.show(
+                                context: ctx2,
+                                title: Text(l10n.homeRenameSuccess),
+                                type: ToastificationType.success,
+                                autoCloseDuration: const Duration(seconds: 2),
+                              );
+                            } catch (_) {
+                              if (!ctx2.mounted) return;
+                              toastification.show(
+                                context: ctx2,
+                                title: Text(l10n.homeRenameFailed),
+                                type: ToastificationType.error,
+                                autoCloseDuration: const Duration(seconds: 3),
+                              );
                             }
                           },
                           child: Text(l10n.rename),
@@ -1041,9 +1102,27 @@ class _HomePageState extends State<HomePage> {
                               context,
                             ).colorScheme.error,
                           ),
-                          onPressed: () {
-                            context.read<GroupProvider>().delete(group.id);
-                            Navigator.pop(ctx2);
+                          onPressed: () async {
+                            final provider = context.read<GroupProvider>();
+                            try {
+                              await provider.delete(group.id);
+                              if (!ctx2.mounted) return;
+                              Navigator.pop(ctx2);
+                              toastification.show(
+                                context: ctx2,
+                                title: Text(l10n.homeDeleteSuccess),
+                                type: ToastificationType.success,
+                                autoCloseDuration: const Duration(seconds: 2),
+                              );
+                            } catch (_) {
+                              if (!ctx2.mounted) return;
+                              toastification.show(
+                                context: ctx2,
+                                title: Text(l10n.homeDeleteFailed),
+                                type: ToastificationType.error,
+                                autoCloseDuration: const Duration(seconds: 3),
+                              );
+                            }
                           },
                           child: Text(l10n.delete),
                         ),
@@ -1095,11 +1174,11 @@ class _HomePageState extends State<HomePage> {
       await groupProv.load();
     }
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.homeTrackRemoved),
-        behavior: SnackBarBehavior.floating,
-      ),
+    toastification.show(
+      context: context,
+      title: Text(l10n.homeTrackRemoved),
+      type: ToastificationType.success,
+      autoCloseDuration: const Duration(seconds: 2),
     );
   }
 
@@ -1127,11 +1206,11 @@ class _HomePageState extends State<HomePage> {
                 onTap: () {
                   groupProv.addTrack(g.id, track);
                   Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(l10n.homeAddedToGroup(g.name)),
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                  toastification.show(
+                    context: context,
+                    title: Text(l10n.homeAddedToGroup(g.name)),
+                    type: ToastificationType.success,
+                    autoCloseDuration: const Duration(seconds: 2),
                   );
                 },
               ),

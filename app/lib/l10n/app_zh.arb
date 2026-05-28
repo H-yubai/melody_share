@@ -94,5 +94,10 @@
     }
   },
   "homeTrackRemoved": "已移出曲目",
-  "homeCreateFailed": "创建失败"
+  "homeCreateFailed": "创建失败",
+  "homeCreateSuccess": "歌单创建成功",
+  "homeRenameSuccess": "重命名成功",
+  "homeRenameFailed": "重命名失败",
+  "homeDeleteSuccess": "删除成功",
+  "homeDeleteFailed": "删除失败"
 }

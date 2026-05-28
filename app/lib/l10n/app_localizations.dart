@@ -451,6 +451,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create failed'**
   String get homeCreateFailed;
+
+  /// No description provided for @homeCreateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist created'**
+  String get homeCreateSuccess;
+
+  /// No description provided for @homeRenameSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist renamed'**
+  String get homeRenameSuccess;
+
+  /// No description provided for @homeRenameFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename failed'**
+  String get homeRenameFailed;
+
+  /// No description provided for @homeDeleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist deleted'**
+  String get homeDeleteSuccess;
+
+  /// No description provided for @homeDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete failed'**
+  String get homeDeleteFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -51,6 +51,7 @@ dependencies:
   lottie: ^3.3.3
   flutter_slidable: ^4.0.3
   shared_preferences: ^2.3.0
+  toastification: ">=3.0.3 <3.1.0"
 
 dev_dependencies:
   flutter_test:

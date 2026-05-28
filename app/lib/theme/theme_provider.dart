@@ -5,7 +5,12 @@ class ThemeProvider extends ChangeNotifier {
 
   ThemeMode get mode => _mode;
 
-  bool get isDark => _mode == ThemeMode.dark;
+  bool get isDark {
+    if (_mode == ThemeMode.dark) return true;
+    if (_mode == ThemeMode.light) return false;
+    final brightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    return brightness == Brightness.dark;
+  }
 
   void setTheme(ThemeMode mode) {
     _mode = mode;
@@ -15,8 +20,8 @@ class ThemeProvider extends ChangeNotifier {
   void toggle() {
     _mode = switch (_mode) {
       ThemeMode.light => ThemeMode.dark,
-      ThemeMode.dark => ThemeMode.system,
-      ThemeMode.system => ThemeMode.light,
+      ThemeMode.dark => ThemeMode.light,
+      ThemeMode.system => ThemeMode.dark,
     };
     notifyListeners();
   }

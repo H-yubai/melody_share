@@ -194,4 +194,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeCreateFailed => '创建失败';
+
+  @override
+  String get homeCreateSuccess => '歌单创建成功';
+
+  @override
+  String get homeRenameSuccess => '重命名成功';
+
+  @override
+  String get homeRenameFailed => '重命名失败';
+
+  @override
+  String get homeDeleteSuccess => '删除成功';
+
+  @override
+  String get homeDeleteFailed => '删除失败';
 }

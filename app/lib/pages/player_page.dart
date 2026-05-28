@@ -59,14 +59,14 @@ class _PlayerPageState extends State<PlayerPage> {
                   AppBar(
                     backgroundColor: Colors.transparent,
                     elevation: 0,
-                    title: Text(
-                      l10n.playerNowPlaying,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
+                    // title: Text(
+                    //   l10n.playerNowPlaying,
+                    //   style: TextStyle(
+                    //     fontSize: 14,
+                    //     fontWeight: FontWeight.w500,
+                    //     color: colorScheme.onSurface,
+                    //   ),
+                    // ),
                     centerTitle: true,
                     leading: IconButton(
                       icon: Icon(

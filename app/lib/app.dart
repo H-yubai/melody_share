@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:toastification/toastification.dart';
 import 'l10n/app_localizations.dart';
 import 'router/app_router.dart';
 import 'services/animation_provider.dart';
@@ -38,6 +39,7 @@ class MelodyShareApp extends StatelessWidget {
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
             themeMode: theme.mode,
+            builder: (context, child) => ToastificationWrapper(child: child!),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             routerConfig: AppRouter.router,

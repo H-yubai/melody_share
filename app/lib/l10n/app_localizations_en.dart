@@ -196,4 +196,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeCreateFailed => 'Create failed';
+
+  @override
+  String get homeCreateSuccess => 'Playlist created';
+
+  @override
+  String get homeRenameSuccess => 'Playlist renamed';
+
+  @override
+  String get homeRenameFailed => 'Rename failed';
+
+  @override
+  String get homeDeleteSuccess => 'Playlist deleted';
+
+  @override
+  String get homeDeleteFailed => 'Delete failed';
 }

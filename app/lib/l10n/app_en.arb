@@ -97,5 +97,10 @@
     }
   },
   "homeTrackRemoved": "Track removed",
-  "homeCreateFailed": "Create failed"
+  "homeCreateFailed": "Create failed",
+  "homeCreateSuccess": "Playlist created",
+  "homeRenameSuccess": "Playlist renamed",
+  "homeRenameFailed": "Rename failed",
+  "homeDeleteSuccess": "Playlist deleted",
+  "homeDeleteFailed": "Delete failed"
 }
