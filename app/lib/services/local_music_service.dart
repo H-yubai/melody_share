@@ -88,7 +88,7 @@ class LocalMusicService {
     }
 
     if (Platform.isAndroid) {
-      await _appendMediaStore(result, onProgress);
+      await _appendMediaStore(result, onProgress: onProgress);
     }
 
     return result;
@@ -104,6 +104,11 @@ class LocalMusicService {
       onProgress?.call(dirPath, 0);
       await _scanDeep(dir, result, onProgress);
     }
+
+    if (Platform.isAndroid) {
+      await _appendMediaStore(result, pathPrefix: dirPath, onProgress: onProgress);
+    }
+
     return result;
   }
 
@@ -156,7 +161,7 @@ class LocalMusicService {
     }
 
     if (Platform.isAndroid) {
-      await _appendMediaStore(result, onProgress);
+      await _appendMediaStore(result, onProgress: onProgress);
     }
 
     return result;
@@ -191,11 +196,12 @@ class LocalMusicService {
   }
 
   static Future<void> _appendMediaStore(List<LocalTrack> result,
-      void Function(String, int)? onProgress) async {
+      {String? pathPrefix, void Function(String, int)? onProgress}) async {
     try {
       final existing = result.map((t) => t.filePath).toSet();
       final mediaTracks = await MediaStoreScanner.scanAudio(onProgress: onProgress);
       for (final t in mediaTracks) {
+        if (pathPrefix != null && !t.filePath.startsWith(pathPrefix)) continue;
         if (!existing.contains(t.filePath)) {
           result.add(t);
         }

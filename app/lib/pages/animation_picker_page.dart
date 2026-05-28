@@ -15,6 +15,11 @@ class _AnimationPickerPageState extends State<AnimationPickerPage> {
     _AnimationInfo('波浪 1', 'assets/animations/lottie/wave1.json', 0),
     _AnimationInfo('波浪 2', 'assets/animations/lottie/wave2.json', 1),
     _AnimationInfo('波浪 3', 'assets/animations/lottie/wave3.json', 2),
+    _AnimationInfo('波浪 4', 'assets/animations/lottie/wave4.json', 3),
+    _AnimationInfo('波浪 5', 'assets/animations/lottie/wave5.json', 4),
+    _AnimationInfo('波浪 6', 'assets/animations/lottie/wave6.json', 5),
+    _AnimationInfo('波浪 7', 'assets/animations/lottie/wave7.json', 6),
+    _AnimationInfo('波浪 8', 'assets/animations/lottie/wave8.json', 7),
   ];
 
   late int _selectedIndex;
