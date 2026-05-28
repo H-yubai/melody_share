@@ -1,5 +1,7 @@
 package com.melodyshare.melody_share
 
+import android.content.Intent
+import android.os.Bundle
 import android.provider.MediaStore
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -8,6 +10,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "melody_share/mediastore"
@@ -16,6 +19,44 @@ class MainActivity : FlutterActivity() {
                 scanAudio(result)
             } else {
                 result.notImplemented()
+            }
+        }
+
+        val serviceIntent = Intent(this, MediaSessionService::class.java)
+        MediaSessionService.methodChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            MediaSessionService.METHOD_CHANNEL
+        ).apply {
+            setMethodCallHandler { call, _ ->
+                when (call.method) {
+                    "start" -> {
+                        val args = call.arguments as? Map<*, *>
+                        serviceIntent.putExtra("action", "start")
+                        call.argument<String>("title")?.let { serviceIntent.putExtra("title", it) }
+                        call.argument<String>("artist")?.let { serviceIntent.putExtra("artist", it) }
+                        call.argument<String>("album")?.let { serviceIntent.putExtra("album", it) }
+                        call.argument<String>("albumArtPath")?.let { serviceIntent.putExtra("albumArtPath", it) }
+                        startForegroundService(serviceIntent)
+                    }
+                    "update" -> {
+                        val args = call.arguments as? Map<*, *>
+                        serviceIntent.putExtra("action", "update")
+                        call.argument<String>("title")?.let { serviceIntent.putExtra("title", it) }
+                        call.argument<String>("artist")?.let { serviceIntent.putExtra("artist", it) }
+                        call.argument<String>("album")?.let { serviceIntent.putExtra("album", it) }
+                        call.argument<String>("albumArtPath")?.let { serviceIntent.putExtra("albumArtPath", it) }
+                        startService(serviceIntent)
+                    }
+                    "setPlaying" -> {
+                        serviceIntent.putExtra("action", "setPlaying")
+                        serviceIntent.putExtra("playing", call.arguments as? Boolean ?: false)
+                        startService(serviceIntent)
+                    }
+                    "stop" -> {
+                        serviceIntent.putExtra("action", "stop")
+                        startService(serviceIntent)
+                    }
+                }
             }
         }
     }

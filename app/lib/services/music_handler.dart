@@ -6,12 +6,14 @@ import 'package:media_kit/media_kit.dart';
 
 import '../models/local_track.dart';
 import 'database_service.dart';
+import 'media_notification_service.dart';
 
 enum PlaybackMode { noRepeat, repeatAll, repeatOne, shuffle }
 
 class MusicHandler {
   final Player player = Player();
   final _random = Random();
+  final MediaNotificationService? _notificationService;
 
   List<LocalTrack> _allTracks = [];
   List<LocalTrack> _localQueue = [];
@@ -22,14 +24,34 @@ class MusicHandler {
   Map<String, int> _ratings = {};
   StreamSubscription? _completedSub;
   StreamSubscription? _errorSub;
+  StreamSubscription? _notificationSub;
 
-  MusicHandler() {
+  MusicHandler({MediaNotificationService? notificationService})
+      : _notificationService = notificationService {
     _completedSub = player.stream.completed.listen((completed) {
       if (completed) next();
     });
-    player.stream.playing.listen((_) => _notify());
+    player.stream.playing.listen((playing) {
+      _notificationService?.setPlaying(playing);
+      _notify();
+    });
     _errorSub = player.stream.error.listen((err) {
       if (err.isNotEmpty) debugPrint('MusicHandler player error: $err');
+    });
+    _notificationSub =
+        _notificationService?.actionStream.listen((action) {
+      switch (action) {
+        case 'play':
+          play();
+        case 'pause':
+          pause();
+        case 'next':
+          next();
+        case 'previous':
+          previous();
+        case 'stop':
+          stop();
+      }
     });
     _loadRatings();
   }
@@ -118,6 +140,7 @@ class MusicHandler {
   Future<void> stop() async {
     await player.stop();
     _currentIndex = -1;
+    _notificationService?.stopPlayback();
     _notify();
   }
 
@@ -150,8 +173,16 @@ class MusicHandler {
     final track = currentTrack;
     if (track == null) return;
     try {
-      await player.open(Media(track.fileUri));
+      await player.open(Media(
+        track.fileUri,
+        extras: {
+          'title': track.title,
+          'artist': track.artist,
+          'album': track.album,
+        },
+      ));
       await player.play();
+      _notificationService?.startPlayback(track);
     } catch (e) {
       debugPrint('MusicHandler._playCurrent: $e');
     }
@@ -279,6 +310,8 @@ class MusicHandler {
   Future<void> dispose() async {
     _completedSub?.cancel();
     _errorSub?.cancel();
+    _notificationSub?.cancel();
+    _notificationService?.dispose();
     await player.dispose();
   }
 }

@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../models/local_track.dart';
 import 'music_handler.dart';
 
@@ -10,6 +12,12 @@ class PlaylistProvider extends ChangeNotifier {
   PlaylistProvider(this._handler) {
     _handler.playingStream.listen((_) => notifyListeners());
     _handler.completedStream.listen((_) => notifyListeners());
+  }
+
+  Future<void> requestNotificationPermission() async {
+    if (!Platform.isAndroid) return;
+    if (await Permission.notification.status.isGranted) return;
+    await Permission.notification.request();
   }
 
   List<LocalTrack> get allTracks => _handler.allTracks;
