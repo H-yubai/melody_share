@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_lyric/flutter_lyric.dart';
 import 'package:lottie/lottie.dart';
@@ -29,11 +31,23 @@ class _PlayerPageState extends State<PlayerPage> {
   PlaylistProvider? _playlist;
   String? _trackId;
   bool _noLyrics = false;
+  static bool _lyricsPersist = false;
 
   String _formatDuration(Duration d) {
     final min = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final sec = d.inSeconds.remainder(60).toString().padLeft(2, '0');
     return '$min:$sec';
+  }
+
+  double _lyricsMaxWidth(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = 48.0;
+    if (defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
+      return math.min(screenWidth - horizontalPadding, 640);
+    }
+    return screenWidth - horizontalPadding;
   }
 
   void _toggleLyrics(LocalTrack track) {
@@ -42,8 +56,10 @@ class _PlayerPageState extends State<PlayerPage> {
         _showLyrics = false;
         _noLyrics = false;
       });
+      _lyricsPersist = false;
     } else if (_lyricsText != null && _lastLyricsId == track.id) {
       setState(() => _showLyrics = true);
+      _lyricsPersist = true;
     } else {
       _fetchLyrics(track);
     }
@@ -56,11 +72,13 @@ class _PlayerPageState extends State<PlayerPage> {
     });
     final lrc = await LyricsService.fetchLyrics(track);
     if (!mounted) return;
+    if (track.id != _trackId) return;
     if (lrc != null) {
       _lyricController.loadLyric(lrc);
       _lyricController.setOnTapLineCallback((pos) {
         context.read<PlaylistProvider>().seek(pos);
       });
+      _lyricsPersist = true;
       setState(() {
         _lyricsText = lrc;
         _lastLyricsId = track.id;
@@ -68,6 +86,7 @@ class _PlayerPageState extends State<PlayerPage> {
         _isLoadingLyrics = false;
       });
     } else {
+      _lyricsPersist = true;
       setState(() {
         _showLyrics = true;
         _isLoadingLyrics = false;
@@ -81,6 +100,10 @@ class _PlayerPageState extends State<PlayerPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startPositionListener();
+      if (_lyricsPersist) {
+        final track = context.read<PlaylistProvider>().currentTrack;
+        if (track != null) _fetchLyrics(track);
+      }
     });
   }
 
@@ -98,7 +121,8 @@ class _PlayerPageState extends State<PlayerPage> {
 
   void _onPlaylistChanged() {
     if (!mounted) return;
-    final newId = _playlist?.currentTrack?.id;
+    final track = _playlist?.currentTrack;
+    final newId = track?.id;
     if (newId != _trackId) {
       _trackId = newId;
       if (_lyricsText != null ||
@@ -106,13 +130,17 @@ class _PlayerPageState extends State<PlayerPage> {
           _showLyrics ||
           _isLoadingLyrics ||
           _noLyrics) {
+        final stayLyrics = _showLyrics;
         setState(() {
           _lyricsText = null;
           _lastLyricsId = null;
-          _showLyrics = false;
-          _isLoadingLyrics = false;
+          _showLyrics = stayLyrics;
+          _isLoadingLyrics = stayLyrics && track != null;
           _noLyrics = false;
         });
+        if (stayLyrics && track != null) {
+          _fetchLyrics(track);
+        }
       }
     }
   }
@@ -207,10 +235,13 @@ class _PlayerPageState extends State<PlayerPage> {
                           child: GestureDetector(
                             onTap: () => _toggleLyrics(track),
                             child: _showLyrics && _lyricsText != null
-                                ? LyricView(
-                                    controller: _lyricController,
-                                    key: ValueKey('lyric_${track.id}'),
-                                    style: LyricStyle(
+                                ? Center(
+                                    child: SizedBox(
+                                      width: _lyricsMaxWidth(context),
+                                      child: LyricView(
+                                        controller: _lyricController,
+                                        key: ValueKey('lyric_${track.id}'),
+                                        style: LyricStyle(
                                       textStyle: TextStyle(
                                         color: colorScheme.onSurface.withValues(
                                           alpha: 0.6,
@@ -248,8 +279,10 @@ class _PlayerPageState extends State<PlayerPage> {
                                         milliseconds: 3000,
                                       ),
                                     ),
-                                  )
-                                : _showLyrics && _noLyrics
+                                  ),
+                                ),
+                              )
+                            : _showLyrics && _noLyrics
                                 ? Center(
                                     child: Column(
                                       mainAxisAlignment:
@@ -429,15 +462,57 @@ class _PlayerPageState extends State<PlayerPage> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(
-                                              _formatDuration(pos),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall
-                                                  ?.copyWith(
-                                                    color: colorScheme
-                                                        .onSurfaceVariant,
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () =>
+                                                      _toggleLyrics(track),
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 2,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: _showLyrics
+                                                          ? colorScheme.primary
+                                                                .withValues(
+                                                                  alpha: 0.15,
+                                                                )
+                                                          : null,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            4,
+                                                          ),
+                                                    ),
+                                                    child: Text(
+                                                      '词',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: _showLyrics
+                                                            ? colorScheme
+                                                                  .primary
+                                                            : colorScheme
+                                                                  .onSurfaceVariant,
+                                                      ),
+                                                    ),
                                                   ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  _formatDuration(pos),
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall
+                                                      ?.copyWith(
+                                                        color: colorScheme
+                                                            .onSurfaceVariant,
+                                                      ),
+                                                ),
+                                              ],
                                             ),
                                             Text(
                                               _formatDuration(dur),
