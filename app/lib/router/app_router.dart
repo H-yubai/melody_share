@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import '../pages/developer/developer_pages.dart';
 import '../pages/group_detail_page.dart';
 import '../pages/home_page.dart';
 import '../pages/player_page.dart';
@@ -32,6 +33,11 @@ class AppRouter {
           final id = int.parse(state.pathParameters['id']!);
           return GroupDetailPage(groupId: id);
         },
+      ),
+      GoRoute(
+        path: '/developer',
+        name: 'developer',
+        builder: (context, state) => const DeveloperPage(),
       ),
     ],
   );

@@ -11,12 +11,35 @@ import 'media_store_scanner.dart';
 class LocalMusicService {
   LocalMusicService._();
 
-  static const _audioExtensions = <String>{'mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'wma'};
+  static const _audioExtensions = <String>{
+    'mp3',
+    'wav',
+    'flac',
+    'aac',
+    'ogg',
+    'm4a',
+    'wma',
+  };
 
   static const _skipDirs = <String>{
-    'Android', 'DCIM', 'Pictures', 'Movies', 'Documents', 'Downloads',
-    'cache', 'data', 'obb', 'Caches', 'trash', 'temp', 'tmp',
-    'Cache', 'Trash', 'Temp', 'Tmp', 'lost+found',
+    'Android',
+    'DCIM',
+    'Pictures',
+    'Movies',
+    'Documents',
+    'Downloads',
+    'cache',
+    'data',
+    'obb',
+    'Caches',
+    'trash',
+    'temp',
+    'tmp',
+    'Cache',
+    'Trash',
+    'Temp',
+    'Tmp',
+    'lost+found',
   };
 
   static Future<bool> requestPermission() async {
@@ -44,7 +67,9 @@ class LocalMusicService {
 
     if (Platform.isAndroid) {
       try {
-        final musicDirs = await getExternalStorageDirectories(type: StorageDirectory.music);
+        final musicDirs = await getExternalStorageDirectories(
+          type: StorageDirectory.music,
+        );
         if (musicDirs != null) {
           for (final d in musicDirs) {
             paths.add(d.path);
@@ -52,13 +77,20 @@ class LocalMusicService {
         }
       } catch (_) {}
       try {
-        final downloadDirs = await getExternalStorageDirectories(type: StorageDirectory.downloads);
+        final downloadDirs = await getExternalStorageDirectories(
+          type: StorageDirectory.downloads,
+        );
         if (downloadDirs != null) {
           for (final d in downloadDirs) {
             paths.add(d.path);
           }
         }
       } catch (_) {}
+      // Also scan well-known public storage paths that getExternalStorageDirectories
+      // may not return on Android 10+ with scoped storage.
+      for (final sub in ['Music', 'Download', 'Musics', 'MP3']) {
+        paths.add('/storage/emulated/0/$sub');
+      }
     } else if (Platform.isWindows) {
       final home = Platform.environment['USERPROFILE'];
       if (home != null) {
@@ -106,7 +138,11 @@ class LocalMusicService {
     }
 
     if (Platform.isAndroid) {
-      await _appendMediaStore(result, pathPrefix: dirPath, onProgress: onProgress);
+      await _appendMediaStore(
+        result,
+        pathPrefix: dirPath,
+        onProgress: onProgress,
+      );
     }
 
     return result;
@@ -132,8 +168,16 @@ class LocalMusicService {
     final paths = <String>{};
 
     if (Platform.isAndroid) {
-      // Scan from the root of each external storage volume
-      for (final type in [StorageDirectory.music, StorageDirectory.podcasts, StorageDirectory.downloads]) {
+      // Scan from well-known public directories first
+      for (final sub in ['Music', 'Download', 'Musics', 'MP3']) {
+        paths.add('/storage/emulated/0/$sub');
+      }
+      // Fallback: try getExternalStorageDirectories for any app-specific paths
+      for (final type in [
+        StorageDirectory.music,
+        StorageDirectory.podcasts,
+        StorageDirectory.downloads,
+      ]) {
         try {
           final dirs = await getExternalStorageDirectories(type: type);
           if (dirs != null && dirs.isNotEmpty) {
@@ -167,21 +211,31 @@ class LocalMusicService {
     return result;
   }
 
-  static Future<void> _scanQuick(Directory dir, List<LocalTrack> result,
-      void Function(String, int)? onProgress) async {
+  static Future<void> _scanQuick(
+    Directory dir,
+    List<LocalTrack> result,
+    void Function(String, int)? onProgress,
+  ) async {
     try {
       await for (final entity
-          in dir.list(recursive: true, followLinks: false).timeout(const Duration(seconds: 10))) {
+          in dir
+              .list(recursive: true, followLinks: false)
+              .timeout(const Duration(seconds: 10))) {
         if (entity is File) await _tryAddFile(entity, result);
       }
     } catch (_) {}
   }
 
-  static Future<void> _scanDeep(Directory dir, List<LocalTrack> result,
-      void Function(String, int)? onProgress) async {
+  static Future<void> _scanDeep(
+    Directory dir,
+    List<LocalTrack> result,
+    void Function(String, int)? onProgress,
+  ) async {
     try {
       await for (final entity
-          in dir.list(followLinks: false).timeout(const Duration(seconds: 10))) {
+          in dir
+              .list(followLinks: false)
+              .timeout(const Duration(seconds: 10))) {
         if (entity is File) {
           await _tryAddFile(entity, result);
         } else if (entity is Directory) {
@@ -195,11 +249,16 @@ class LocalMusicService {
     } catch (_) {}
   }
 
-  static Future<void> _appendMediaStore(List<LocalTrack> result,
-      {String? pathPrefix, void Function(String, int)? onProgress}) async {
+  static Future<void> _appendMediaStore(
+    List<LocalTrack> result, {
+    String? pathPrefix,
+    void Function(String, int)? onProgress,
+  }) async {
     try {
       final existing = result.map((t) => t.filePath).toSet();
-      final mediaTracks = await MediaStoreScanner.scanAudio(onProgress: onProgress);
+      final mediaTracks = await MediaStoreScanner.scanAudio(
+        onProgress: onProgress,
+      );
       for (final t in mediaTracks) {
         if (pathPrefix != null && !t.filePath.startsWith(pathPrefix)) continue;
         if (!existing.contains(t.filePath)) {

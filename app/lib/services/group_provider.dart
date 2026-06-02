@@ -15,10 +15,12 @@ class GroupProvider extends ChangeNotifier {
     try {
       _groups = await DatabaseService.getGroups();
       _groupTrackIds.clear();
-      await Future.wait(_groups.map((g) async {
-        final ids = await DatabaseService.getGroupTrackIds(g.id);
-        _groupTrackIds[g.id] = ids;
-      }));
+      await Future.wait(
+        _groups.map((g) async {
+          final ids = await DatabaseService.getGroupTrackIds(g.id);
+          _groupTrackIds[g.id] = ids;
+        }),
+      );
     } catch (_) {
       _groups = [];
       _groupTrackIds.clear();

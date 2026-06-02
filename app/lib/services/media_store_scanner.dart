@@ -26,15 +26,17 @@ class MediaStoreScanner {
           final map = Map<String, dynamic>.from(r as Map);
           final filePath = map['filePath'] as String? ?? '';
           if (filePath.isEmpty) continue;
-          tracks.add(LocalTrack(
-            id: map['id'] as String? ?? filePath.hashCode.toString(),
-            filePath: filePath,
-            title: map['title'] as String? ?? '',
-            artist: map['artist'] as String? ?? '',
-            extension: map['extension'] as String? ?? '',
-            durationMs: map['durationMs'] as int? ?? 0,
-            album: map['album'] as String? ?? '',
-          ));
+          tracks.add(
+            LocalTrack(
+              id: map['id'] as String? ?? filePath.hashCode.toString(),
+              filePath: filePath,
+              title: map['title'] as String? ?? '',
+              artist: map['artist'] as String? ?? '',
+              extension: map['extension'] as String? ?? '',
+              durationMs: map['durationMs'] as int? ?? 0,
+              album: map['album'] as String? ?? '',
+            ),
+          );
         } catch (_) {}
       }
       return tracks;

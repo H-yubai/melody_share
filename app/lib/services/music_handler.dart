@@ -27,7 +27,7 @@ class MusicHandler {
   StreamSubscription? _notificationSub;
 
   MusicHandler({MediaNotificationService? notificationService})
-      : _notificationService = notificationService {
+    : _notificationService = notificationService {
     _completedSub = player.stream.completed.listen((completed) {
       if (completed) next();
     });
@@ -37,8 +37,7 @@ class MusicHandler {
     _errorSub = player.stream.error.listen((err) {
       if (err.isNotEmpty) debugPrint('MusicHandler player error: $err');
     });
-    _notificationSub =
-        _notificationService?.actionStream.listen((action) {
+    _notificationSub = _notificationService?.actionStream.listen((action) {
       switch (action) {
         case 'play':
           play();
@@ -68,8 +67,8 @@ class MusicHandler {
   int? get currentIndex => _currentIndex >= 0 ? _currentIndex : null;
   LocalTrack? get currentTrack =>
       _currentIndex >= 0 && _currentIndex < _localQueue.length
-          ? _localQueue[_currentIndex]
-          : null;
+      ? _localQueue[_currentIndex]
+      : null;
   PlaybackMode get mode => _mode;
   bool get isPlaying => player.state.playing;
 
@@ -174,14 +173,16 @@ class MusicHandler {
     final track = currentTrack;
     if (track == null) return;
     try {
-      await player.open(Media(
-        track.fileUri,
-        extras: {
-          'title': track.title,
-          'artist': track.artist,
-          'album': track.album,
-        },
-      ));
+      await player.open(
+        Media(
+          track.fileUri,
+          extras: {
+            'title': track.title,
+            'artist': track.artist,
+            'album': track.album,
+          },
+        ),
+      );
       await player.play();
       _notificationService?.startPlayback(track);
     } catch (e) {

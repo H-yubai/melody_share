@@ -8,7 +8,8 @@ class ThemeProvider extends ChangeNotifier {
   bool get isDark {
     if (_mode == ThemeMode.dark) return true;
     if (_mode == ThemeMode.light) return false;
-    final brightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    final brightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
     return brightness == Brightness.dark;
   }
 

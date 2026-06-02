@@ -1,19 +1,28 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import '../models/track.dart';
 
 class ApiService {
   ApiService._();
 
-  static const String _baseUrl = 'http://10.0.2.2:3000';
+  static late Dio _dio;
+
+  static void init({String baseUrl = 'http://10.0.2.2:3000'}) {
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
+  }
+
+  static void updateBaseUrl(String baseUrl) {
+    _dio.options.baseUrl = baseUrl;
+  }
 
   static Future<List<Track>> fetchTracks() async {
-    final res = await http.get(Uri.parse('$_baseUrl/api/tracks'));
-    if (res.statusCode != 200) {
-      throw HttpException('Failed to fetch tracks: ${res.statusCode}');
-    }
-    final list = jsonDecode(res.body) as List;
+    final res = await _dio.get('/api/tracks');
+    final list = res.data as List;
     return list.map((e) => Track.fromJson(e as Map<String, dynamic>)).toList();
   }
 
@@ -22,18 +31,12 @@ class ApiService {
     required String artist,
     required String filePath,
   }) async {
-    final req = http.MultipartRequest(
-      'POST',
-      Uri.parse('$_baseUrl/api/upload'),
-    );
-    req.fields['title'] = title;
-    req.fields['artist'] = artist;
-    req.files.add(await http.MultipartFile.fromPath('file', filePath));
-    final streamed = await req.send();
-    final res = await http.Response.fromStream(streamed);
-    if (res.statusCode != 200) {
-      throw HttpException('Failed to upload track: ${res.statusCode}');
-    }
-    return Track.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
+    final formData = FormData.fromMap({
+      'title': title,
+      'artist': artist,
+      'file': await MultipartFile.fromFile(filePath),
+    });
+    final res = await _dio.post('/api/upload', data: formData);
+    return Track.fromJson(res.data as Map<String, dynamic>);
   }
 }

@@ -63,23 +63,27 @@ class MainActivity : FlutterActivity() {
 
     private fun scanAudio(result: MethodChannel.Result) {
         val audioList = mutableListOf<Map<String, Any?>>()
-        val projection = arrayOf(
+        val projection = mutableListOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.DATA,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.ALBUM,
             MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.RELATIVE_PATH,
+            MediaStore.Audio.Media.DISPLAY_NAME,
         )
 
         try {
             val cursor = contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                "${MediaStore.Audio.Media.IS_MUSIC} = 1",
+                projection.toTypedArray(),
+                null,
                 null,
                 null
             )
+
+            val storageRoot = android.os.Environment.getExternalStorageDirectory().absolutePath
 
             cursor?.use {
                 val idCol = it.getColumnIndex(MediaStore.Audio.Media._ID)
@@ -88,9 +92,20 @@ class MainActivity : FlutterActivity() {
                 val artistCol = it.getColumnIndex(MediaStore.Audio.Media.ARTIST)
                 val albumCol = it.getColumnIndex(MediaStore.Audio.Media.ALBUM)
                 val durationCol = it.getColumnIndex(MediaStore.Audio.Media.DURATION)
+                val relativePathCol = it.getColumnIndex(MediaStore.Audio.Media.RELATIVE_PATH)
+                val displayNameCol = it.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)
 
                 while (it.moveToNext()) {
-                    val filePath = if (dataCol >= 0) it.getString(dataCol) else null
+                    // Try DATA column first; fall back to RELATIVE_PATH + DISPLAY_NAME
+                    // (DATA is deprecated on API 29+ and may be null)
+                    var filePath = if (dataCol >= 0) it.getString(dataCol) else null
+                    if (filePath.isNullOrEmpty() && relativePathCol >= 0 && displayNameCol >= 0) {
+                        val relPath = it.getString(relativePathCol) ?: ""
+                        val dispName = it.getString(displayNameCol) ?: ""
+                        if (relPath.isNotEmpty() && dispName.isNotEmpty()) {
+                            filePath = "$storageRoot/$relPath/$dispName"
+                        }
+                    }
                     if (filePath.isNullOrEmpty()) continue
 
                     val ext = filePath.substringAfterLast('.', "").lowercase()

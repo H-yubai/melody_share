@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_lyric/flutter_lyric.dart';
 import 'package:lottie/lottie.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
+import '../models/local_track.dart';
 import '../services/animation_provider.dart';
 import '../services/music_handler.dart';
 import '../services/playlist_provider.dart';
+import '../services/lyrics_service.dart';
 
 class PlayerPage extends StatefulWidget {
   const PlayerPage({super.key});
@@ -15,10 +20,109 @@ class PlayerPage extends StatefulWidget {
 }
 
 class _PlayerPageState extends State<PlayerPage> {
+  bool _showLyrics = false;
+  bool _isLoadingLyrics = false;
+  final LyricController _lyricController = LyricController();
+  String? _lyricsText;
+  String? _lastLyricsId;
+  StreamSubscription<Duration>? _positionSub;
+  PlaylistProvider? _playlist;
+  String? _trackId;
+  bool _noLyrics = false;
+
   String _formatDuration(Duration d) {
     final min = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final sec = d.inSeconds.remainder(60).toString().padLeft(2, '0');
     return '$min:$sec';
+  }
+
+  void _toggleLyrics(LocalTrack track) {
+    if (_showLyrics) {
+      setState(() {
+        _showLyrics = false;
+        _noLyrics = false;
+      });
+    } else if (_lyricsText != null && _lastLyricsId == track.id) {
+      setState(() => _showLyrics = true);
+    } else {
+      _fetchLyrics(track);
+    }
+  }
+
+  Future<void> _fetchLyrics(LocalTrack track) async {
+    setState(() {
+      _isLoadingLyrics = true;
+      _noLyrics = false;
+    });
+    final lrc = await LyricsService.fetchLyrics(track);
+    if (!mounted) return;
+    if (lrc != null) {
+      _lyricController.loadLyric(lrc);
+      _lyricController.setOnTapLineCallback((pos) {
+        context.read<PlaylistProvider>().seek(pos);
+      });
+      setState(() {
+        _lyricsText = lrc;
+        _lastLyricsId = track.id;
+        _showLyrics = true;
+        _isLoadingLyrics = false;
+      });
+    } else {
+      setState(() {
+        _showLyrics = true;
+        _isLoadingLyrics = false;
+        _noLyrics = true;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startPositionListener();
+    });
+  }
+
+  void _startPositionListener() {
+    _positionSub?.cancel();
+    try {
+      _playlist = context.read<PlaylistProvider>();
+      _trackId = _playlist!.currentTrack?.id;
+      _playlist!.addListener(_onPlaylistChanged);
+      _positionSub = _playlist!.positionStream.listen((pos) {
+        if (_lyricsText != null) _lyricController.setProgress(pos);
+      });
+    } catch (_) {}
+  }
+
+  void _onPlaylistChanged() {
+    if (!mounted) return;
+    final newId = _playlist?.currentTrack?.id;
+    if (newId != _trackId) {
+      _trackId = newId;
+      if (_lyricsText != null ||
+          _lastLyricsId != null ||
+          _showLyrics ||
+          _isLoadingLyrics ||
+          _noLyrics) {
+        setState(() {
+          _lyricsText = null;
+          _lastLyricsId = null;
+          _showLyrics = false;
+          _isLoadingLyrics = false;
+          _noLyrics = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _positionSub?.cancel();
+    _playlist?.removeListener(_onPlaylistChanged);
+    _lyricController.dispose();
+    super.dispose();
   }
 
   @override
@@ -59,14 +163,34 @@ class _PlayerPageState extends State<PlayerPage> {
                   AppBar(
                     backgroundColor: Colors.transparent,
                     elevation: 0,
-                    // title: Text(
-                    //   l10n.playerNowPlaying,
-                    //   style: TextStyle(
-                    //     fontSize: 14,
-                    //     fontWeight: FontWeight.w500,
-                    //     color: colorScheme.onSurface,
-                    //   ),
-                    // ),
+                    title: _showLyrics
+                        ? Column(
+                            children: [
+                              Text(
+                                track.displayTitle,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                track.displayArtist.isEmpty
+                                    ? l10n.unknownArtist
+                                    : track.displayArtist,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
                     centerTitle: true,
                     leading: IconButton(
                       icon: Icon(
@@ -78,66 +202,174 @@ class _PlayerPageState extends State<PlayerPage> {
                   ),
                   Expanded(
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Hero(
-                          tag: 'album_art_${track.id}',
-                          child: Container(
-                            width: 260,
-                            height: 260,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: colorScheme.primaryContainer.withValues(
-                                alpha: 0.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: colorScheme.primary.withValues(
-                                    alpha: 0.2,
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _toggleLyrics(track),
+                            child: _showLyrics && _lyricsText != null
+                                ? LyricView(
+                                    controller: _lyricController,
+                                    key: ValueKey('lyric_${track.id}'),
+                                    style: LyricStyle(
+                                      textStyle: TextStyle(
+                                        color: colorScheme.onSurface.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        fontSize: 15,
+                                      ),
+                                      activeStyle: TextStyle(
+                                        color: colorScheme.primary,
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      translationStyle: TextStyle(
+                                        color: colorScheme.onSurface.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        fontSize: 13,
+                                      ),
+                                      lineTextAlign: TextAlign.center,
+                                      lineGap: 12,
+                                      contentAlignment:
+                                          CrossAxisAlignment.center,
+                                      translationLineGap: 8,
+                                      selectionAnchorPosition: 0.48,
+                                      selectionAlignment:
+                                          MainAxisAlignment.center,
+                                      selectedColor: colorScheme.primary,
+                                      selectedTranslationColor:
+                                          colorScheme.onSurface,
+                                      scrollDuration: const Duration(
+                                        milliseconds: 240,
+                                      ),
+                                      selectionAutoResumeDuration:
+                                          const Duration(milliseconds: 320),
+                                      activeAutoResumeDuration: const Duration(
+                                        milliseconds: 3000,
+                                      ),
+                                    ),
+                                  )
+                                : _showLyrics && _noLyrics
+                                ? Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          PhosphorIconsRegular.fileText,
+                                          size: 48,
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          '暂无歌词',
+                                          style: TextStyle(
+                                            color: colorScheme.onSurfaceVariant,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : Center(
+                                    child: _isLoadingLyrics
+                                        ? const CircularProgressIndicator()
+                                        : Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Hero(
+                                                tag: 'album_art_${track.id}',
+                                                child: Container(
+                                                  width: 260,
+                                                  height: 260,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          20,
+                                                        ),
+                                                    color: colorScheme
+                                                        .primaryContainer
+                                                        .withValues(alpha: 0.5),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: colorScheme
+                                                            .primary
+                                                            .withValues(
+                                                              alpha: 0.2,
+                                                            ),
+                                                        blurRadius: 30,
+                                                        offset: const Offset(
+                                                          0,
+                                                          10,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          20,
+                                                        ),
+                                                    child: Lottie.asset(
+                                                      animProv.assetPath,
+                                                      animate: isPlaying,
+                                                      repeat: true,
+                                                      fit: BoxFit.contain,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 40),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 32,
+                                                    ),
+                                                child: Text(
+                                                  track.displayTitle,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .headlineSmall
+                                                      ?.copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                  textAlign: TextAlign.center,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 32,
+                                                    ),
+                                                child: Text(
+                                                  track.displayArtist.isEmpty
+                                                      ? l10n.unknownArtist
+                                                      : track.displayArtist,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleMedium
+                                                      ?.copyWith(
+                                                        color: colorScheme
+                                                            .onSurfaceVariant,
+                                                      ),
+                                                  textAlign: TextAlign.center,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                   ),
-                                  blurRadius: 30,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: Lottie.asset(
-                                animProv.assetPath,
-                                animate: isPlaying,
-                                repeat: true,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
                           ),
                         ),
-                        const SizedBox(height: 40),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 32),
-                          child: Text(
-                            track.displayTitle,
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 32),
-                          child: Text(
-                            track.displayArtist.isEmpty
-                                ? l10n.unknownArtist
-                                : track.displayArtist,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(color: colorScheme.onSurfaceVariant),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 16),
                         StreamBuilder<Duration>(
                           stream: playlist.positionStream,
                           initialData: playlist.position,

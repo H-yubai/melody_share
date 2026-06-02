@@ -152,7 +152,10 @@ class _HomePageState extends State<HomePage> {
             );
           },
         ),
-        title: const Text('MelodyShare'),
+        title: GestureDetector(
+          onLongPress: () => context.push('/developer'),
+          child: const Text('MelodyShare'),
+        ),
         actions: [
           if (_isScanning)
             const Padding(

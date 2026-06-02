@@ -1,28 +1,20 @@
 # AGENTS.md
 
-## Repo structure
+Monorepo with `app/` (Flutter) and `server/` (Rust/Axum).
 
-Monorepo with two independent packages:
+## App (`app/`)
 
-- **`app/`** — Flutter mobile app (Dart, SDK `^3.9.2`)
-  - Entry: `lib/main.dart` → `MelodyShareApp`
-  - Router: `go_router` (`/`, `/upload`, `/player/:id`)
-  - API base URL hardcoded to `http://10.0.2.2:3000` (Android emulator → host)
-  - Local music scanning via `LocalMusicService` (app bar scan icon)
-  - Playback via `just_audio` managed by `PlaylistProvider` singleton
-  - State: `ThemeProvider` + `PlaylistProvider` (both simple `ChangeNotifier` singletons)
-  - Platform permissions: `READ_EXTERNAL_STORAGE` (Android ≤12) / `READ_MEDIA_AUDIO` (Android 13+) in `AndroidManifest.xml`; `NSAppleMusicUsageDescription` in iOS `Info.plist`
-
-- **`server/`** — Rust API server (Axum 0.8 + SQLx + PostgreSQL)
-  - Entry: `src/main.rs` → `#[tokio::main]`
-  - Auto-creates `tracks` table on startup
-  - Config via env vars (`DATABASE_URL` required, `SERVER_HOST`/`SERVER_PORT` optional)
-  - CORS: permissive (no restrictions)
-  - Uploaded files saved to `uploads/` dir
-
-## Commands
-
-### App (`app/`)
+- **Entry**: `lib/main.dart`
+- **SDK**: `^3.9.2`, Material 3, `go_router`, `provider`, `media_kit` (not `just_audio`), `sqflite`, `metadata_god`, `dio`, `webview_flutter`, `lottie`, `permission_handler`, `flutter_localizations`
+- **Routes**: `/home`, `/upload`, `/player`, `/group/:id`, `/developer` (defined in `lib/router/app_router.dart`)
+- **State**: `MusicHandler` (core `media_kit` Player + queue + ratings) + `PlaylistProvider` (ChangeNotifier wrapper), plus `ThemeProvider`, `LocaleProvider` (default `zh`), `AnimationProvider`, `GroupProvider`, `DeveloperSettings` — all wired via `MultiProvider` in `lib/app.dart`
+- **Local DB**: SQLite via `sqflite` (`melody_share.db`); tables: `song_groups`, `group_tracks`, `scanned_tracks`, `track_ratings`. Desktop uses `sqflite_common_ffi` fallback.
+- **API**: `dio` via `ApiService` (initialized in `main.dart`); dynamic `baseUrl` from `DeveloperSettings` provider; long-press MelodyShare title → `/developer` page to switch URL
+- **Localization**: `l10n.yaml` → ARB files in `lib/l10n/`; `flutter gen-l10n` generates `AppLocalizations`
+- **Assets**: Lottie animations in `assets/animations/lottie/`; launcher icon / splash configured in `pubspec.yaml` via `flutter_launcher_icons` / `flutter_native_splash`
+- **Notifications**: Android `MethodChannel('melody_share/media_session')` in `MediaNotificationService`; `media_kit` libs handle platform audio focus
+- **Permissions**: Android — `audio` / `storage` / `manageExternalStorage` / `notification`; iOS — `NSAppleMusicUsageDescription`
+- **Test**: `flutter test` — single smoke test in `test/widget_test.dart`
 
 | Action | Command |
 |---|---|
@@ -30,8 +22,20 @@ Monorepo with two independent packages:
 | Format | `dart format .` |
 | Test | `flutter test` |
 | Run | `flutter run` |
+| Gen l10n | `flutter gen-l10n` (auto-run by `flutter run`/`build`) |
+| Gen icons | `dart run flutter_launcher_icons` |
+| Gen splash | `dart run flutter_native_splash` |
 
-### Server (`server/`)
+## Server (`server/`)
+
+- **Entry**: `src/main.rs`, Axum 0.8 + SQLx + PostgreSQL, Rust edition 2024
+- **Config**: env vars — `DATABASE_URL` (required), `SERVER_HOST` (default `0.0.0.0`), `SERVER_PORT` (default `3000`); `.env` loaded via `dotenvy`
+- **CORS**: permissive (no restrictions)
+- **DB**: auto-creates tables on startup (`db.rs`): `tracks`, plus community tables — `users`, `sessions`, `playlists`, `playlist_tracks`, `follows`, `track_likes`, `comments`, `notifications`. Reference SQL in `server/sql/001_community_schema.sql`.
+- **Routes**: `GET /` (index), `GET /api/tracks`, `GET /api/tracks/{id}`, `POST /api/upload` (multipart)
+- **Uploads**: saved to `uploads/` dir (auto-created)
+- Uses `tower-http` CORS, `tracing` + `tracing-subscriber` for logging
+- **No tests**
 
 | Action | Command |
 |---|---|
@@ -42,6 +46,6 @@ Monorepo with two independent packages:
 
 ## Known issues
 
-- `app/test/widget_test.dart` was fixed to be a basic smoke test (no longer the broken counter template).
-- The server has **no tests** at all.
-- No CI workflows or Docker Compose for the database.
+- Server has **no tests** and **no Docker Compose** for PostgreSQL — need a running PG instance for `cargo run`
+- `app/test/widget_test.dart` is a basic smoke test only
+- No CI workflows

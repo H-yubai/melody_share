@@ -22,9 +22,7 @@ class AppTheme {
         borderRadius: BorderRadius.all(Radius.circular(12)),
       ),
     ),
-    navigationBarTheme: const NavigationBarThemeData(
-      elevation: 0,
-    ),
+    navigationBarTheme: const NavigationBarThemeData(elevation: 0),
   );
 
   static final ThemeData dark = ThemeData(
@@ -44,8 +42,6 @@ class AppTheme {
         borderRadius: BorderRadius.all(Radius.circular(12)),
       ),
     ),
-    navigationBarTheme: const NavigationBarThemeData(
-      elevation: 0,
-    ),
+    navigationBarTheme: const NavigationBarThemeData(elevation: 0),
   );
 }
