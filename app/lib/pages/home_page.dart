@@ -154,7 +154,7 @@ class _HomePageState extends State<HomePage> {
         ),
         title: GestureDetector(
           onLongPress: () => context.push('/developer'),
-          child: const Text('MelodyShare'),
+          child: const Text('广陵'),
         ),
         actions: [
           if (_isScanning)
@@ -228,7 +228,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'MelodyShare',
+                    '广陵',
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: colorScheme.onPrimary,
                     ),
@@ -402,7 +402,7 @@ class _HomePageState extends State<HomePage> {
                       Navigator.pop(context);
                       showAboutDialog(
                         context: context,
-                        applicationName: 'MelodyShare',
+                        applicationName: '广陵',
                         applicationVersion: '1.0.0',
                       );
                     },

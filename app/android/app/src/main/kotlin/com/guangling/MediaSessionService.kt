@@ -1,4 +1,4 @@
-package com.melodyshare.melody_share
+package com.guangling
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -20,9 +20,9 @@ import io.flutter.plugin.common.MethodChannel
 class MediaSessionService : Service() {
 
     companion object {
-        const val CHANNEL_ID = "melody_share_media"
+        const val CHANNEL_ID = "guangling_media"
         const val NOTIFICATION_ID = 1
-        const val METHOD_CHANNEL = "melody_share/media_session"
+        const val METHOD_CHANNEL = "guangling/media_session"
 
         var methodChannel: MethodChannel? = null
     }
@@ -110,7 +110,7 @@ class MediaSessionService : Service() {
     }
 
     private fun createMediaSession() {
-        mediaSession = MediaSession(this, "MelodyShareMediaSession").apply {
+        mediaSession = MediaSession(this, "GuanglingMediaSession").apply {
             setCallback(object : MediaSession.Callback() {
                 override fun onPlay() {
                     sendToFlutter("play")

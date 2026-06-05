@@ -1,4 +1,4 @@
-package com.melodyshare.melody_share
+package com.guangling
 
 import android.content.Intent
 import android.os.Bundle
@@ -13,7 +13,7 @@ class MainActivity : FlutterActivity() {
 
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
-            "melody_share/mediastore"
+            "guangling/mediastore"
         ).setMethodCallHandler { call, result ->
             if (call.method == "scanAudio") {
                 scanAudio(result)

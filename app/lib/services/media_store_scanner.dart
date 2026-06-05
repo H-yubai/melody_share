@@ -8,7 +8,7 @@ import '../models/local_track.dart';
 class MediaStoreScanner {
   MediaStoreScanner._();
 
-  static const _channel = MethodChannel('melody_share/mediastore');
+  static const _channel = MethodChannel('guangling/mediastore');
 
   static Future<List<LocalTrack>> scanAudio({
     void Function(String dir, int count)? onProgress,

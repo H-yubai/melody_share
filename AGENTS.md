@@ -8,11 +8,11 @@ Monorepo with `app/` (Flutter) and `server/` (Rust/Axum).
 - **SDK**: `^3.9.2`, Material 3, `go_router`, `provider`, `media_kit` (not `just_audio`), `sqflite`, `metadata_god`, `dio`, `webview_flutter`, `lottie`, `permission_handler`, `flutter_localizations`
 - **Routes**: `/home`, `/upload`, `/player`, `/group/:id`, `/developer` (defined in `lib/router/app_router.dart`)
 - **State**: `MusicHandler` (core `media_kit` Player + queue + ratings) + `PlaylistProvider` (ChangeNotifier wrapper), plus `ThemeProvider`, `LocaleProvider` (default `zh`), `AnimationProvider`, `GroupProvider`, `DeveloperSettings` — all wired via `MultiProvider` in `lib/app.dart`
-- **Local DB**: SQLite via `sqflite` (`melody_share.db`); tables: `song_groups`, `group_tracks`, `scanned_tracks`, `track_ratings`. Desktop uses `sqflite_common_ffi` fallback.
-- **API**: `dio` via `ApiService` (initialized in `main.dart`); dynamic `baseUrl` from `DeveloperSettings` provider; long-press MelodyShare title → `/developer` page to switch URL
+- **Local DB**: SQLite via `sqflite` (`guangling.db`); tables: `song_groups`, `group_tracks`, `scanned_tracks`, `track_ratings`. Desktop uses `sqflite_common_ffi` fallback.
+- **API**: `dio` via `ApiService` (initialized in `main.dart`); dynamic `baseUrl` from `DeveloperSettings` provider; long-press 广陵 title → `/developer` page to switch URL
 - **Localization**: `l10n.yaml` → ARB files in `lib/l10n/`; `flutter gen-l10n` generates `AppLocalizations`
 - **Assets**: Lottie animations in `assets/animations/lottie/`; launcher icon / splash configured in `pubspec.yaml` via `flutter_launcher_icons` / `flutter_native_splash`
-- **Notifications**: Android `MethodChannel('melody_share/media_session')` in `MediaNotificationService`; `media_kit` libs handle platform audio focus
+- **Notifications**: Android `MethodChannel('guangling/media_session')` in `MediaNotificationService`; `media_kit` libs handle platform audio focus
 - **Permissions**: Android — `audio` / `storage` / `manageExternalStorage` / `notification`; iOS — `NSAppleMusicUsageDescription`
 - **Test**: `flutter test` — single smoke test in `test/widget_test.dart`
 

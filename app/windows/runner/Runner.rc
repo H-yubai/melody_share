@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.melodyshare" "\0"
-            VALUE "FileDescription", "melody_share" "\0"
+            VALUE "CompanyName", "com.guangling" "\0"
+            VALUE "FileDescription", "广陵" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "melody_share" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.melodyshare. All rights reserved." "\0"
-            VALUE "OriginalFilename", "melody_share.exe" "\0"
-            VALUE "ProductName", "melody_share" "\0"
+            VALUE "InternalName", "guangling" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.guangling. All rights reserved." "\0"
+            VALUE "OriginalFilename", "guangling.exe" "\0"
+            VALUE "ProductName", "广陵" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

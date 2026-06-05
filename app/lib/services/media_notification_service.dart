@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import '../models/local_track.dart';
 
 class MediaNotificationService {
-  static const _channel = MethodChannel('melody_share/media_session');
+  static const _channel = MethodChannel('guangling/media_session');
 
   bool _initialized = false;
   bool _serviceStarted = false;

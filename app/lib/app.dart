@@ -37,7 +37,7 @@ class MelodyShareApp extends StatelessWidget {
           final theme = context.watch<ThemeProvider>();
           final locale = context.watch<LocaleProvider>();
           return MaterialApp.router(
-            title: 'MelodyShare',
+            title: '广陵',
             debugShowCheckedModeBanner: false,
             locale: locale.locale,
             theme: AppTheme.light,

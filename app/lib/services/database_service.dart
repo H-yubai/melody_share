@@ -17,7 +17,7 @@ class DatabaseService {
 
   static Future<Database> _open() async {
     final dir = await getApplicationDocumentsDirectory();
-    final path = p.join(dir.path, 'melody_share.db');
+    final path = p.join(dir.path, 'guangling.db');
     final db = sqlite3.open(path);
     db.execute('PRAGMA busy_timeout = 5000');
     db.execute('PRAGMA foreign_keys = ON');
