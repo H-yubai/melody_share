@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 import '../l10n/app_localizations.dart';
 import '../models/local_track.dart';
-import '../services/group_provider.dart';
-import '../services/playlist_provider.dart';
+import '../provider/group_provider.dart';
+import '../provider/playlist_provider.dart';
 
 class GroupDetailPage extends StatefulWidget {
   final int groupId;

@@ -9,9 +9,9 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/local_track.dart';
-import '../services/animation_provider.dart';
+import '../provider/animation_provider.dart';
+import '../provider/playlist_provider.dart';
 import '../services/music_handler.dart';
-import '../services/playlist_provider.dart';
 import '../services/lyrics_service.dart';
 
 class PlayerPage extends StatefulWidget {

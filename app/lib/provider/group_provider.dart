@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/group.dart';
 import '../models/local_track.dart';
-import 'database_service.dart';
+import '../services/database_service.dart';
 
 class GroupProvider extends ChangeNotifier {
   List<Group> _groups = [];

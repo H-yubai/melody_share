@@ -3,14 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 import 'l10n/app_localizations.dart';
 import 'router/app_router.dart';
-import 'services/animation_provider.dart';
-import 'services/developer_settings.dart';
-import 'services/group_provider.dart';
-import 'services/locale_provider.dart';
+import 'provider/animation_provider.dart';
+import 'provider/developer_settings.dart';
+import 'provider/group_provider.dart';
+import 'provider/locale_provider.dart';
+import 'provider/playlist_provider.dart';
+import 'provider/theme_provider.dart';
 import 'services/music_handler.dart';
-import 'services/playlist_provider.dart';
 import 'theme/app_theme.dart';
-import 'theme/theme_provider.dart';
 
 class MelodyShareApp extends StatelessWidget {
   final MusicHandler handler;

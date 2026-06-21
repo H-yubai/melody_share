@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 import '../../services/api_service.dart';
-import '../../services/developer_settings.dart';
+import '../../provider/developer_settings.dart';
 
 class DeveloperPage extends StatelessWidget {
   const DeveloperPage({super.key});

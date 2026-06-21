@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/local_track.dart';
 import 'database_service.dart';
@@ -11,6 +12,8 @@ import 'media_notification_service.dart';
 enum PlaybackMode { noRepeat, repeatAll, repeatOne, shuffle }
 
 class MusicHandler {
+  static const _keyPlaybackMode = 'playback_mode';
+
   final Player player = Player();
   final _random = Random();
   final MediaNotificationService? _notificationService;
@@ -52,6 +55,24 @@ class MusicHandler {
       }
     });
     _loadRatings();
+    _loadPlaybackMode();
+  }
+
+  Future<void> _loadPlaybackMode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getInt(_keyPlaybackMode);
+      if (saved != null && saved >= 0 && saved < PlaybackMode.values.length) {
+        _mode = PlaybackMode.values[saved];
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _savePlaybackMode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_keyPlaybackMode, _mode.index);
+    } catch (_) {}
   }
 
   Future<void> _loadRatings() async {
@@ -220,12 +241,14 @@ class MusicHandler {
       PlaybackMode.shuffle => PlaybackMode.noRepeat,
     };
     if (_mode == PlaybackMode.shuffle) _rebuildShuffle();
+    _savePlaybackMode();
     _notify();
   }
 
   void setPlaybackMode(PlaybackMode mode) {
     _mode = mode;
     if (mode == PlaybackMode.shuffle) _rebuildShuffle();
+    _savePlaybackMode();
     _notify();
   }
 

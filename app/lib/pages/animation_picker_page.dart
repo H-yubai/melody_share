@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import '../services/animation_provider.dart';
+import '../provider/animation_provider.dart';
 
 class AnimationPickerPage extends StatefulWidget {
   const AnimationPickerPage({super.key});

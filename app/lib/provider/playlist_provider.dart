@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../models/local_track.dart';
-import 'music_handler.dart';
+import '../services/music_handler.dart';
 
 class PlaylistProvider extends ChangeNotifier {
   final MusicHandler _handler;

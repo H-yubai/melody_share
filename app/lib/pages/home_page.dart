@@ -9,11 +9,11 @@ import '../models/group.dart';
 import '../models/local_track.dart';
 import '../services/database_service.dart';
 import 'animation_picker_page.dart';
-import '../services/group_provider.dart';
+import '../provider/group_provider.dart';
+import '../provider/locale_provider.dart';
+import '../provider/playlist_provider.dart';
+import '../provider/theme_provider.dart';
 import '../services/local_music_service.dart';
-import '../services/locale_provider.dart';
-import '../services/playlist_provider.dart';
-import '../theme/theme_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
