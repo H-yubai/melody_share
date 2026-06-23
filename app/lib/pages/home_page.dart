@@ -275,12 +275,11 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                   _DrawerItem(
-                    icon: Icons.upload,
+                    icon: Icons.language,
                     title: l10n.drawerUploadMusic,
-                    subtitle: l10n.drawerUploadMusicSub,
                     onTap: () {
                       Navigator.pop(context);
-                      context.push('/upload');
+                      context.push('/higequ');
                     },
                   ),
                   const Divider(indent: 16, endIndent: 16),

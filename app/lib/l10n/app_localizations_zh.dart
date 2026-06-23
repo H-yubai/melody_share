@@ -45,7 +45,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get drawerLocalMusicSub => '扫描设备中的音乐文件';
 
   @override
-  String get drawerUploadMusic => '上传音乐';
+  String get drawerUploadMusic => 'Hi 歌曲';
 
   @override
   String get drawerUploadMusicSub => '分享音乐到服务器';

@@ -17,8 +17,8 @@ class AppRouter {
         builder: (context, state) => const HomePage(),
       ),
       GoRoute(
-        path: '/upload',
-        name: 'upload',
+        path: '/higequ',
+        name: 'higequ',
         builder: (context, state) => const UploadPage(),
       ),
       GoRoute(

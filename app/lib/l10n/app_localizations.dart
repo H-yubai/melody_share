@@ -173,7 +173,7 @@ abstract class AppLocalizations {
   /// No description provided for @drawerUploadMusic.
   ///
   /// In en, this message translates to:
-  /// **'Upload Music'**
+  /// **'Hi 歌曲'**
   String get drawerUploadMusic;
 
   /// No description provided for @drawerUploadMusicSub.

@@ -46,7 +46,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get drawerLocalMusicSub => 'Scan device for music';
 
   @override
-  String get drawerUploadMusic => 'Upload Music';
+  String get drawerUploadMusic => 'Hi 歌曲';
 
   @override
   String get drawerUploadMusicSub => 'Share music to server';

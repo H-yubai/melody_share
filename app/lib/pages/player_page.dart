@@ -242,47 +242,46 @@ class _PlayerPageState extends State<PlayerPage> {
                                         controller: _lyricController,
                                         key: ValueKey('lyric_${track.id}'),
                                         style: LyricStyle(
-                                      textStyle: TextStyle(
-                                        color: colorScheme.onSurface.withValues(
-                                          alpha: 0.6,
+                                          textStyle: TextStyle(
+                                            color: colorScheme.onSurface
+                                                .withValues(alpha: 0.6),
+                                            fontSize: 15,
+                                          ),
+                                          activeStyle: TextStyle(
+                                            color: colorScheme.primary,
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          translationStyle: TextStyle(
+                                            color: colorScheme.onSurface
+                                                .withValues(alpha: 0.5),
+                                            fontSize: 13,
+                                          ),
+                                          lineTextAlign: TextAlign.center,
+                                          lineGap: 12,
+                                          contentAlignment:
+                                              CrossAxisAlignment.center,
+                                          translationLineGap: 8,
+                                          selectionAnchorPosition: 0.48,
+                                          selectionAlignment:
+                                              MainAxisAlignment.center,
+                                          selectedColor: colorScheme.primary,
+                                          selectedTranslationColor:
+                                              colorScheme.onSurface,
+                                          scrollDuration: const Duration(
+                                            milliseconds: 240,
+                                          ),
+                                          selectionAutoResumeDuration:
+                                              const Duration(milliseconds: 320),
+                                          activeAutoResumeDuration:
+                                              const Duration(
+                                                milliseconds: 3000,
+                                              ),
                                         ),
-                                        fontSize: 15,
-                                      ),
-                                      activeStyle: TextStyle(
-                                        color: colorScheme.primary,
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      translationStyle: TextStyle(
-                                        color: colorScheme.onSurface.withValues(
-                                          alpha: 0.5,
-                                        ),
-                                        fontSize: 13,
-                                      ),
-                                      lineTextAlign: TextAlign.center,
-                                      lineGap: 12,
-                                      contentAlignment:
-                                          CrossAxisAlignment.center,
-                                      translationLineGap: 8,
-                                      selectionAnchorPosition: 0.48,
-                                      selectionAlignment:
-                                          MainAxisAlignment.center,
-                                      selectedColor: colorScheme.primary,
-                                      selectedTranslationColor:
-                                          colorScheme.onSurface,
-                                      scrollDuration: const Duration(
-                                        milliseconds: 240,
-                                      ),
-                                      selectionAutoResumeDuration:
-                                          const Duration(milliseconds: 320),
-                                      activeAutoResumeDuration: const Duration(
-                                        milliseconds: 3000,
                                       ),
                                     ),
-                                  ),
-                                ),
-                              )
-                            : _showLyrics && _noLyrics
+                                  )
+                                : _showLyrics && _noLyrics
                                 ? Center(
                                     child: Column(
                                       mainAxisAlignment:
