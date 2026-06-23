@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Monorepo with `app/` (Flutter) and `server/` (Rust/Axum).
+Flutter music player app (`app/`).
 
 ## App (`app/`)
 
@@ -26,29 +26,7 @@ Monorepo with `app/` (Flutter) and `server/` (Rust/Axum).
 | Gen icons | `dart run flutter_launcher_icons` |
 | Gen splash | `dart run flutter_native_splash` |
 
-## Server (`server/`)
-
-- **Entry**: `src/main.rs`, Axum 0.8 + SQLx + PostgreSQL, Rust edition 2024
-- **Config**: env vars — `DATABASE_URL` (required), `SERVER_HOST` (default `0.0.0.0`), `SERVER_PORT` (default `3000`); `.env` loaded via `dotenvy`
-- **CORS**: permissive (no restrictions)
-- **DB**: auto-creates tables on startup (`db.rs`): `tracks`, plus community tables — `users`, `sessions`, `playlists`, `playlist_tracks`, `follows`, `track_likes`, `comments`, `notifications`. Reference SQL in `server/sql/001_community_schema.sql`.
-- **Routes**: `GET /` (index), `GET /api/tracks`, `GET /api/tracks/{id}`, `POST /api/upload`. Defined in `routes/mod.rs` + `routes/tracks.rs`.
-- **Community API routes are NOT yet implemented** — only DB schema exists.
-- **Uploads**: saved to `uploads/` dir (auto-created)
-- Uses `tower-http` CORS, `tracing` + `tracing-subscriber` for logging
-- **No tests**
-
-| Action | Command |
-|---|---|
-| Check | `cargo check` |
-| Lint | `cargo clippy` |
-| Build | `cargo build` |
-| Run | `cargo run` |
-| Test | `cargo test` |
-
 ## Known issues
 
-- Server has **no tests** and **no Docker Compose** for PostgreSQL — need a running PG instance for `cargo run`
-- Community API routes are unimplemented (DB schema exists, no handlers)
 - `app/test/widget_test.dart` is a basic smoke test only
 - No CI workflows
