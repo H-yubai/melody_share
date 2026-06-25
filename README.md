@@ -13,12 +13,12 @@ Cross-platform music player with local playback and playlist management.
 |---|---|
 | 语言 Language | Dart (SDK ^3.9.2) |
 | 框架 Framework | Flutter (Material 3) |
-| 路由 Routing | `go_router`（声明式路由：`/home`、`/upload`、`/player`、`/group/:id`、`/developer`） |
+| 路由 Routing | `go_router`（声明式路由：`/home`、`/higequ`、`/player`、`/group/:id`、`/developer`） |
 | 状态管理 State | `provider`（6 个 ChangeNotifier：`ThemeProvider`、`LocaleProvider`、`AnimationProvider`、`DeveloperSettings`、`PlaylistProvider`、`GroupProvider`） |
 | 音频 Audio | `media_kit`（核心 Player + 播放队列 + 评分） |
 | 本地数据库 Local DB | `sqflite` / `sqflite_common_ffi`（SQLite，数据库文件 `guangling.db`） |
 | HTTP 请求 HTTP | `dio`（通过 `ApiService` 封装，支持动态切换 base URL） |
-| 元数据 Metadata | `metadata_god`（读取音频标签信息） |
+| 元数据 Metadata | `audio_metadata_reader`（读取音频标签信息） |
 | 歌词显示 Lyrics | `flutter_lyric` |
 | 通知 Notifications | `flutter_local_notifications` + Android `MethodChannel('guangling/media_session')` |
 | 动效 Lottie | `lottie`（动效文件位于 `assets/animations/lottie/`） |
@@ -40,7 +40,7 @@ Cross-platform music player with local playback and playlist management.
 │                      (Flutter)                        │
 ├──────────────────────────────────────────────────────┤
 │                        UI 层 / UI Layer               │
-│  HomePage | UploadPage | PlayerPage | GroupDetail    │
+│  HomePage | WebViewPage | PlayerPage | GroupDetail    │
 ├──────────────────────────────────────────────────────┤
 │                  状态管理 / State (provider)           │
 │  ThemeProvider  LocaleProvider  AnimationProvider     │
@@ -62,7 +62,7 @@ Cross-platform music player with local playback and playlist management.
 
 ### 数据流 / Data Flow
 
-1. **本地扫描 / Local Scan**：`metadata_god` 扫描设备音频文件 → 存入 `scanned_tracks` 表
+1. **本地扫描 / Local Scan**：`audio_metadata_reader` 扫描设备音频文件 → 存入 `scanned_tracks` 表
 2. **分组管理 / Grouping**：创建歌单（`song_groups`）→ 将曲目加入分组（`group_tracks`）
 3. **播放 / Playback**：`MusicHandler` 通过 `media_kit` `Player` 播放本地文件，支持循环/随机/评分加权随机模式
 4. **配置 / Config**：长按顶栏"广陵"标题进入开发者页面，动态修改服务端地址（若部署了可选后端）
@@ -76,7 +76,7 @@ Cross-platform music player with local playback and playlist management.
 | 路径 Path | 页面 Page | 说明 Description |
 |---|---|---|
 | `/` | `HomePage` | 首页：浏览已扫描曲目、歌单、播放队列 |
-| `/upload` | `UploadPage` | 上传页面：上传音乐至可选后端 |
+| `/higequ` | `WebViewPage` | HiGeQu 内嵌浏览器 |
 | `/player` | `PlayerPage` | 播放页面：正在播放、控制按钮、歌词、评分 |
 | `/group/:id` | `GroupDetailPage` | 歌单详情：查看/编辑分组内的曲目列表 |
 | `/developer` | `DeveloperPage` | 开发者设置：修改服务端地址（长按标题进入） |

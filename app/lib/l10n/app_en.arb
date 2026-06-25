@@ -102,5 +102,36 @@
   "homeRenameSuccess": "Playlist renamed",
   "homeRenameFailed": "Rename failed",
   "homeDeleteSuccess": "Playlist deleted",
-  "homeDeleteFailed": "Delete failed"
+  "homeDeleteFailed": "Delete failed",
+  "webviewAudio": "Audio",
+  "webviewResources": "Resources",
+  "webviewShowAll": "Show all",
+  "webviewAudioOnly": "Audio only",
+  "webviewDownloadAll": "Download All",
+  "webviewDownloading": "Downloading: {name}",
+  "@webviewDownloading": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "webviewDownloaded": "Downloaded: {name}",
+  "@webviewDownloaded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "webviewDownloadFailed": "Download failed: {error}",
+  "@webviewDownloadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "webviewNoResources": "No resources detected yet.\nBrowse the page and try again.",
+  "webviewNoAudio": "No audio files found."
 }

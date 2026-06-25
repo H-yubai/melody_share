@@ -18,7 +18,7 @@ Cross-platform music player with local playback and playlist management.
 | 音频 Audio | `media_kit`（核心 Player + 播放队列 + 评分） |
 | 本地数据库 Local DB | `sqflite` / `sqflite_common_ffi`（SQLite，数据库文件 `guangling.db`） |
 | HTTP 请求 HTTP | `dio`（通过 `ApiService` 封装，支持动态切换 base URL） |
-| 元数据 Metadata | `metadata_god`（读取音频标签信息） |
+| 元数据 Metadata | `audio_metadata_reader`（读取音频标签信息） |
 | 歌词显示 Lyrics | `flutter_lyric` |
 | 通知 Notifications | `flutter_local_notifications` + Android `MethodChannel('guangling/media_session')` |
 | 动效 Lottie | `lottie`（动效文件位于 `assets/animations/lottie/`） |
@@ -62,7 +62,7 @@ Cross-platform music player with local playback and playlist management.
 
 ### 数据流 / Data Flow
 
-1. **本地扫描 / Local Scan**：`metadata_god` 扫描设备音频文件 → 存入 `scanned_tracks` 表
+1. **本地扫描 / Local Scan**：`audio_metadata_reader` 扫描设备音频文件 → 存入 `scanned_tracks` 表
 2. **分组管理 / Grouping**：创建歌单（`song_groups`）→ 将曲目加入分组（`group_tracks`）
 3. **播放 / Playback**：`MusicHandler` 通过 `media_kit` `Player` 播放本地文件，支持循环/随机/评分加权随机模式
 4. **配置 / Config**：长按顶栏"广陵"标题进入开发者页面，动态修改服务端地址（若部署了可选后端）

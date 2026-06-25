@@ -5,8 +5,8 @@ Flutter music player app (`app/`).
 ## App (`app/`)
 
 - **Entry**: `lib/main.dart`
-- **SDK**: `^3.9.2`, Material 3, `go_router`, `provider`, `media_kit` (not `just_audio`), `sqflite`, `metadata_god`, `dio`, `webview_flutter`, `lottie`, `permission_handler`, `flutter_localizations`
-- **Routes**: `/home`, `/upload`, `/player`, `/group/:id`, `/developer` (defined in `lib/router/app_router.dart`)
+- **SDK**: `^3.9.2`, Material 3, `go_router`, `provider`, `media_kit` (not `just_audio`), `sqflite`, `audio_metadata_reader`, `dio`, `webview_flutter`, `lottie`, `permission_handler`, `flutter_localizations`, `toastification`（默认信息反馈方式）
+- **Routes**: `/home`, `/higequ`, `/player`, `/group/:id`, `/developer` (defined in `lib/router/app_router.dart`)
 - **State**: `MusicHandler` (in `services/`; core `media_kit` Player + queue + ratings) + 6 providers in `lib/provider/`: `PlaylistProvider` (ChangeNotifier wrapper), `ThemeProvider`, `LocaleProvider` (default `zh`), `AnimationProvider`, `GroupProvider`, `DeveloperSettings` — wired via `MultiProvider` in `lib/app.dart`
 - **Local DB**: SQLite via `sqflite` (`guangling.db`); tables: `song_groups`, `group_tracks`, `scanned_tracks`, `track_ratings`. Desktop uses `sqflite_common_ffi` fallback.
 - **API**: `dio` via `ApiService` (initialized in `main.dart`); dynamic `baseUrl` from `DeveloperSettings`; long-press 广陵 title → `/developer` page to switch URL

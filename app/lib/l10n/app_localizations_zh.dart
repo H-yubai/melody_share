@@ -209,4 +209,40 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeDeleteFailed => '删除失败';
+
+  @override
+  String get webviewAudio => '音频';
+
+  @override
+  String get webviewResources => '资源';
+
+  @override
+  String get webviewShowAll => '显示全部';
+
+  @override
+  String get webviewAudioOnly => '仅音频';
+
+  @override
+  String get webviewDownloadAll => '全部下载';
+
+  @override
+  String webviewDownloading(String name) {
+    return '正在下载：$name';
+  }
+
+  @override
+  String webviewDownloaded(String name) {
+    return '已下载：$name';
+  }
+
+  @override
+  String webviewDownloadFailed(String error) {
+    return '下载失败：$error';
+  }
+
+  @override
+  String get webviewNoResources => '尚未检测到资源。\n浏览页面后重试。';
+
+  @override
+  String get webviewNoAudio => '未找到音频文件。';
 }

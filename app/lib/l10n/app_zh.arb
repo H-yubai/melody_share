@@ -99,5 +99,36 @@
   "homeRenameSuccess": "重命名成功",
   "homeRenameFailed": "重命名失败",
   "homeDeleteSuccess": "删除成功",
-  "homeDeleteFailed": "删除失败"
+  "homeDeleteFailed": "删除失败",
+  "webviewAudio": "音频",
+  "webviewResources": "资源",
+  "webviewShowAll": "显示全部",
+  "webviewAudioOnly": "仅音频",
+  "webviewDownloadAll": "全部下载",
+  "webviewDownloading": "正在下载：{name}",
+  "@webviewDownloading": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "webviewDownloaded": "已下载：{name}",
+  "@webviewDownloaded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "webviewDownloadFailed": "下载失败：{error}",
+  "@webviewDownloadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "webviewNoResources": "尚未检测到资源。\n浏览页面后重试。",
+  "webviewNoAudio": "未找到音频文件。"
 }

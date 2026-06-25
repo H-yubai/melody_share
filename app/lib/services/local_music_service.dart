@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:metadata_god/metadata_god.dart';
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -299,12 +299,12 @@ class LocalMusicService {
       final ext = name.split('.').last;
 
       try {
-        final meta = await MetadataGod.readMetadata(file: file.path);
+        final meta = readMetadata(file, getImage: false);
         if ((meta.title ?? '').isNotEmpty) title = meta.title!;
         if ((meta.artist ?? '').isNotEmpty) artist = meta.artist!;
         if ((meta.album ?? '').isNotEmpty) album = meta.album!;
-        if (meta.durationMs != null && meta.durationMs! > 0) {
-          durationMs = meta.durationMs!.toInt();
+        if (meta.duration != null && meta.duration!.inMilliseconds > 0) {
+          durationMs = meta.duration!.inMilliseconds;
         }
       } catch (_) {}
 

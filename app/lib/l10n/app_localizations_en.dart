@@ -211,4 +211,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeDeleteFailed => 'Delete failed';
+
+  @override
+  String get webviewAudio => 'Audio';
+
+  @override
+  String get webviewResources => 'Resources';
+
+  @override
+  String get webviewShowAll => 'Show all';
+
+  @override
+  String get webviewAudioOnly => 'Audio only';
+
+  @override
+  String get webviewDownloadAll => 'Download All';
+
+  @override
+  String webviewDownloading(String name) {
+    return 'Downloading: $name';
+  }
+
+  @override
+  String webviewDownloaded(String name) {
+    return 'Downloaded: $name';
+  }
+
+  @override
+  String webviewDownloadFailed(String error) {
+    return 'Download failed: $error';
+  }
+
+  @override
+  String get webviewNoResources =>
+      'No resources detected yet.\nBrowse the page and try again.';
+
+  @override
+  String get webviewNoAudio => 'No audio files found.';
 }

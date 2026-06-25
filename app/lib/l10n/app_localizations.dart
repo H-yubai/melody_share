@@ -481,6 +481,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete failed'**
   String get homeDeleteFailed;
+
+  /// No description provided for @webviewAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get webviewAudio;
+
+  /// No description provided for @webviewResources.
+  ///
+  /// In en, this message translates to:
+  /// **'Resources'**
+  String get webviewResources;
+
+  /// No description provided for @webviewShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get webviewShowAll;
+
+  /// No description provided for @webviewAudioOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio only'**
+  String get webviewAudioOnly;
+
+  /// No description provided for @webviewDownloadAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Download All'**
+  String get webviewDownloadAll;
+
+  /// No description provided for @webviewDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading: {name}'**
+  String webviewDownloading(String name);
+
+  /// No description provided for @webviewDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded: {name}'**
+  String webviewDownloaded(String name);
+
+  /// No description provided for @webviewDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed: {error}'**
+  String webviewDownloadFailed(String error);
+
+  /// No description provided for @webviewNoResources.
+  ///
+  /// In en, this message translates to:
+  /// **'No resources detected yet.\nBrowse the page and try again.'**
+  String get webviewNoResources;
+
+  /// No description provided for @webviewNoAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'No audio files found.'**
+  String get webviewNoAudio;
 }
 
 class _AppLocalizationsDelegate
