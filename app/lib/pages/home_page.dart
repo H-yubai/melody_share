@@ -208,6 +208,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
+              height: 200,
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -216,32 +217,43 @@ class _HomePageState extends State<HomePage> {
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Stack(
                 children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: colorScheme.onPrimary.withValues(
-                      alpha: 0.2,
-                    ),
-                    child: Icon(
-                      Icons.person,
-                      color: colorScheme.onPrimary,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '广陵',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      color: colorScheme.onPrimary,
+                  Positioned.fill(
+                    child: Center(
+                      child: Opacity(
+                        opacity: 0.15, // 透明度
+                        child: Image.asset(
+                          'assets/icon/app_icon.png',
+                          fit: BoxFit.contain,
+                          width: double.infinity, // 宽度铺满
+                          height: double.infinity, // 高度铺满
+                          alignment: Alignment.center,
+                          filterQuality: FilterQuality.high,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.drawerSubtitle,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onPrimary.withValues(alpha: 0.8),
+                  Positioned(
+                    bottom: 0,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 12), // 调整顶部间距
+                        Text(
+                          '广陵',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: colorScheme.onPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.drawerSubtitle,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onPrimary.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -656,12 +668,8 @@ class _HomePageState extends State<HomePage> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontWeight: isCurrent
-                                    ? FontWeight.w600
-                                    : null,
-                                color: isCurrent
-                                    ? colorScheme.primary
-                                    : null,
+                                fontWeight: isCurrent ? FontWeight.w600 : null,
+                                color: isCurrent ? colorScheme.primary : null,
                               ),
                             ),
                             subtitle: Row(
@@ -685,11 +693,9 @@ class _HomePageState extends State<HomePage> {
                                   const SizedBox(width: 8),
                                   Text(
                                     track.displayDuration,
-                                    style: theme.textTheme.bodySmall
-                                        ?.copyWith(
-                                          color:
-                                              colorScheme.onSurfaceVariant,
-                                        ),
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
                                 ],
                               ],

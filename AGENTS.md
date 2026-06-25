@@ -9,10 +9,10 @@ Flutter music player app (`app/`).
 ## App (`app/`)
 
 - **Entry**: `lib/main.dart`
-- **SDK**: `^3.9.2`, Material 3, `go_router`, `provider`, `media_kit` (not `just_audio`), `sqflite`, `audio_metadata_reader`, `dio`, `webview_flutter`, `lottie`, `permission_handler`, `flutter_localizations`, `toastification`（默认信息反馈方式）
+- **SDK**: `^3.9.2`, Material 3, `go_router`, `provider`, `media_kit` (not `just_audio`), `sqflite`, `audio_metadata_reader`, `dio`, `file_picker`, `flutter_inappwebview`, `url_launcher`, `intl`, `path_provider`, `permission_handler`, `flutter_localizations`, `toastification`（默认信息反馈方式）, `flutter_slidable`, `flutter_local_notifications`, `shared_preferences`, `flutter_lyric`, `dio_cache_interceptor`
 - **Routes**: `/home`, `/higequ`, `/player`, `/group/:id`, `/developer` (defined in `lib/router/app_router.dart`)
 - **State**: `MusicHandler` (in `services/`; core `media_kit` Player + queue + ratings) + 6 providers in `lib/provider/`: `PlaylistProvider` (ChangeNotifier wrapper), `ThemeProvider`, `LocaleProvider` (default `zh`), `AnimationProvider`, `GroupProvider`, `DeveloperSettings` — wired via `MultiProvider` in `lib/app.dart`
-- **Local DB**: SQLite via `sqflite` (`guangling.db`); tables: `song_groups`, `group_tracks`, `scanned_tracks`, `track_ratings`. Desktop uses `sqflite_common_ffi` fallback.
+- **Local DB**: SQLite via `sqlite3` (`guangling.db`); tables: `song_groups`, `group_tracks`, `scanned_tracks`, `track_ratings`, `track_edits`. Desktop uses `sqlite3` fallback.
 - **API**: `dio` via `ApiService` (initialized in `main.dart`); dynamic `baseUrl` from `DeveloperSettings`; long-press 广陵 title → `/developer` page to switch URL
 - **Localization**: `l10n.yaml` → ARB files in `lib/l10n/` (`app_en.arb`, `app_zh.arb`); `flutter gen-l10n` generates `AppLocalizations`
 - **Assets**: Lottie animations in `assets/animations/lottie/`; launcher icon / splash configured in `pubspec.yaml` via `flutter_launcher_icons` / `flutter_native_splash`

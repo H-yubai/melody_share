@@ -1,13 +1,28 @@
 package com.guangling
 
+import android.app.Activity
+import android.app.RecoverableSecurityException
 import android.content.Intent
+import android.content.IntentSender
+import android.media.MediaScannerConnection
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.content.ContentUris
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
+
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
+    private val DELETE_REQUEST_CODE = 2333
+    private var pendingResult: MethodChannel.Result? = null
+    private var pendingIntentSender: IntentSender? = null
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
@@ -61,24 +76,137 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == DELETE_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                pendingResult?.success(true)
+            } else {
+                pendingResult?.success(false)
+            }
+            pendingResult = null
+        }
+    }
+
+    private fun getAudioUriFromPathImproved(path: String): Uri? {
+        val file = java.io.File(path)
+        val displayName = file.name
+
+        // 尝试通过 DISPLAY_NAME 匹配
+        val cursor = contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Audio.Media._ID),
+            "${MediaStore.Audio.Media.DISPLAY_NAME} = ?",
+            arrayOf(displayName),
+            null
+        )
+
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val id = it.getLong(it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
+                return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
+            }
+        }
+
+        // 如果上面查不到，再降级使用 DATA 字段（兼容低版本）
+        val fallbackCursor = contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Audio.Media._ID),
+            "${MediaStore.Audio.Media.DATA} = ?",
+            arrayOf(path),
+            null
+        )
+        fallbackCursor?.use {
+            if (it.moveToFirst()) {
+                val id = it.getLong(it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
+                return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
+            }
+        }
+
+        return null
+    }
+
     private fun deleteAudioFile(call: MethodCall, result: MethodChannel.Result) {
         val filePath = call.argument<String>("filePath") ?: ""
         if (filePath.isEmpty()) {
             result.success(false)
             return
         }
-        try {
-            // 1. Remove record from MediaStore database to prevent re-indexing
-            val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-            val where = "${MediaStore.Audio.Media.DATA} = ?"
-            contentResolver.delete(uri, where, arrayOf(filePath))
 
-            // 2. Delete the physical file
-            val file = java.io.File(filePath)
-            val deleted = if (file.exists()) file.delete() else true
-            result.success(deleted)
+        pendingResult = result
+
+        // 核心改进：调用媒体扫描器，强行让系统给这个物理文件登记户口
+        MediaScannerConnection.scanFile(this, arrayOf(filePath), null) { _, _ ->
+            // 扫描完成后（在子线程回调），重新在媒体库里查一次 Uri
+            val mediaUri = getAudioUriFromPathImproved(filePath)
+            
+            // 切换回主线程来处理 UI 弹窗和结果返回
+            runOnUiThread {
+                if (mediaUri == null) {
+                    // 此时如果还查不到，说明文件确实不归 MediaStore 管或者文件已经彻底没了
+                    android.util.Log.d("MediaStoreScanner", "扫描后仍无法在媒体库中找到该文件的 Uri: $filePath")
+                    
+                    // 最后的挣扎：尝试物理删除
+                    val file = java.io.File(filePath)
+                    if (file.exists() && file.delete()) {
+                        result.success(true)
+                    } else {
+                        result.success(false)
+                    }
+                    pendingResult = null
+                    return@runOnUiThread
+                }
+                
+                // 顺利拿到 Uri！开始触发系统的删除确认弹窗
+                executeMediaStoreDelete(mediaUri)
+            }
+        }
+    }
+
+    private fun executeMediaStoreDelete(mediaUri: Uri) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // Android 11+ 标准弹窗
+                val uriList = listOf(mediaUri)
+                val pendingIntent = MediaStore.createDeleteRequest(contentResolver, uriList)
+                pendingIntentSender = pendingIntent.intentSender
+                startIntentSenderForResult(
+                    pendingIntent.intentSender,
+                    DELETE_REQUEST_CODE,
+                    null, 0, 0, 0
+                )
+            } else {
+                // Android 10 捕获异常触发弹窗
+                try {
+                    val rows = contentResolver.delete(mediaUri, null, null)
+                    if (rows > 0) {
+                        pendingResult?.success(true)
+                        pendingResult = null
+                    } else {
+                        pendingResult?.success(false)
+                        pendingResult = null
+                    }
+                } catch (securityException: SecurityException) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        val recoverableSecurityException = securityException as? RecoverableSecurityException
+                        val intentSender = recoverableSecurityException?.userAction?.actionIntent?.intentSender
+                        if (intentSender != null) {
+                            pendingIntentSender = intentSender
+                            startIntentSenderForResult(intentSender, DELETE_REQUEST_CODE, null, 0, 0, 0)
+                        } else {
+                            pendingResult?.success(false)
+                            pendingResult = null
+                        }
+                    } else {
+                        pendingResult?.success(false)
+                        pendingResult = null
+                    }
+                }
+            }
         } catch (e: Exception) {
-            result.error("DELETE_FAILED", e.message, null)
+            android.util.Log.e("MediaStoreScanner", "触发删除通道异常", e)
+            pendingResult?.error("DELETE_FAILED", e.message, null)
+            pendingResult = null
         }
     }
 
@@ -129,18 +257,22 @@ class MainActivity : FlutterActivity() {
                     }
                     if (filePath.isNullOrEmpty()) continue
 
-                    val ext = filePath.substringAfterLast('.', "").lowercase()
-                    if (ext !in listOf("mp3", "wav", "flac", "aac", "ogg", "m4a", "wma")) continue
+                     val ext = filePath.substringAfterLast('.', "").lowercase()
+                     if (ext !in listOf("mp3", "wav", "flac", "aac", "ogg", "m4a", "wma")) continue
 
-                    audioList.add(mapOf(
-                        "id" to (if (idCol >= 0) it.getLong(idCol).toString() else ""),
-                        "filePath" to filePath,
-                        "title" to (if (titleCol >= 0) it.getString(titleCol) ?: "" else ""),
-                        "artist" to (if (artistCol >= 0) it.getString(artistCol) ?: "" else ""),
-                        "album" to (if (albumCol >= 0) it.getString(albumCol) ?: "" else ""),
-                        "durationMs" to (if (durationCol >= 0) it.getInt(durationCol) else 0),
-                        "extension" to ext,
-                    ))
+                     // Check if the file actually exists
+                     val file = java.io.File(filePath)
+                     if (!file.exists()) continue
+
+                     audioList.add(mapOf(
+                         "id" to (if (idCol >= 0) it.getLong(idCol).toString() else ""),
+                         "filePath" to filePath,
+                         "title" to (if (titleCol >= 0) it.getString(titleCol) ?: "" else ""),
+                         "artist" to (if (artistCol >= 0) it.getString(artistCol) ?: "" else ""),
+                         "album" to (if (albumCol >= 0) it.getString(albumCol) ?: "" else ""),
+                         "durationMs" to (if (durationCol >= 0) it.getInt(durationCol) else 0),
+                         "extension" to ext,
+                     ))
                 }
             }
             result.success(audioList)

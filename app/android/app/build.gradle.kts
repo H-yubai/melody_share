@@ -48,5 +48,6 @@ dependencies {
     implementation("androidx.window:window:1.3.0")
     implementation("androidx.window:window-java:1.3.0")
     implementation("androidx.media:media:1.4.0")
+    implementation("androidx.activity:activity-ktx:1.7.2")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
