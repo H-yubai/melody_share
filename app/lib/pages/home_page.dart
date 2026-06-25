@@ -432,7 +432,12 @@ class _HomePageState extends State<HomePage> {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.check),
+              leading: Icon(
+                Icons.check,
+                color: ctx.watch<LocaleProvider>().locale.languageCode == 'zh'
+                    ? null
+                    : Colors.transparent,
+              ),
               title: Text(l10n.chinese),
               onTap: () {
                 ctx.read<LocaleProvider>().setLocale(const Locale('zh'));
@@ -440,7 +445,12 @@ class _HomePageState extends State<HomePage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.check),
+              leading: Icon(
+                Icons.check,
+                color: ctx.watch<LocaleProvider>().locale.languageCode == 'en'
+                    ? null
+                    : Colors.transparent,
+              ),
               title: Text(l10n.english),
               onTap: () {
                 ctx.read<LocaleProvider>().setLocale(const Locale('en'));

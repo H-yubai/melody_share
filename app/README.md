@@ -13,7 +13,7 @@ Cross-platform music player with local playback and playlist management.
 |---|---|
 | 语言 Language | Dart (SDK ^3.9.2) |
 | 框架 Framework | Flutter (Material 3) |
-| 路由 Routing | `go_router`（声明式路由：`/home`、`/upload`、`/player`、`/group/:id`、`/developer`） |
+| 路由 Routing | `go_router`（声明式路由：`/home`、`/higequ`、`/player`、`/group/:id`、`/developer`） |
 | 状态管理 State | `provider`（6 个 ChangeNotifier：`ThemeProvider`、`LocaleProvider`、`AnimationProvider`、`DeveloperSettings`、`PlaylistProvider`、`GroupProvider`） |
 | 音频 Audio | `media_kit`（核心 Player + 播放队列 + 评分） |
 | 本地数据库 Local DB | `sqflite` / `sqflite_common_ffi`（SQLite，数据库文件 `guangling.db`） |
@@ -40,7 +40,7 @@ Cross-platform music player with local playback and playlist management.
 │                      (Flutter)                        │
 ├──────────────────────────────────────────────────────┤
 │                        UI 层 / UI Layer               │
-│  HomePage | UploadPage | PlayerPage | GroupDetail    │
+│  HomePage | WebViewPage | PlayerPage | GroupDetail    │
 ├──────────────────────────────────────────────────────┤
 │                  状态管理 / State (provider)           │
 │  ThemeProvider  LocaleProvider  AnimationProvider     │
@@ -76,7 +76,7 @@ Cross-platform music player with local playback and playlist management.
 | 路径 Path | 页面 Page | 说明 Description |
 |---|---|---|
 | `/` | `HomePage` | 首页：浏览已扫描曲目、歌单、播放队列 |
-| `/upload` | `UploadPage` | 上传页面：上传音乐至可选后端 |
+| `/higequ` | `WebViewPage` | HiGeQu 内嵌浏览器 |
 | `/player` | `PlayerPage` | 播放页面：正在播放、控制按钮、歌词、评分 |
 | `/group/:id` | `GroupDetailPage` | 歌单详情：查看/编辑分组内的曲目列表 |
 | `/developer` | `DeveloperPage` | 开发者设置：修改服务端地址（长按标题进入） |

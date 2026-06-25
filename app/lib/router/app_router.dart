@@ -3,7 +3,7 @@ import '../pages/developer/developer_pages.dart';
 import '../pages/group_detail_page.dart';
 import '../pages/home_page.dart';
 import '../pages/player_page.dart';
-import '../pages/upload_page.dart';
+import '../pages/webview_page.dart';
 
 class AppRouter {
   AppRouter._();
@@ -19,7 +19,7 @@ class AppRouter {
       GoRoute(
         path: '/higequ',
         name: 'higequ',
-        builder: (context, state) => const UploadPage(),
+        builder: (context, state) => const WebViewPage(),
       ),
       GoRoute(
         path: '/player',

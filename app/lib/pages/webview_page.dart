@@ -4,14 +4,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 
-class UploadPage extends StatefulWidget {
-  const UploadPage({super.key});
+class WebViewPage extends StatefulWidget {
+  const WebViewPage({super.key});
 
   @override
-  State<UploadPage> createState() => _UploadPageState();
+  State<WebViewPage> createState() => _WebViewPageState();
 }
 
-class _UploadPageState extends State<UploadPage> {
+class _WebViewPageState extends State<WebViewPage> {
   InAppWebViewController? _controller;
   bool _isLoading = true;
   bool _canGoBack = false;
