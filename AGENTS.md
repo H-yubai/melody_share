@@ -1,5 +1,9 @@
 # AGENTS.md
 
+> 与用户交流时全程使用中文（包括所有提问、选项说明、权限请求、代码审查等），除非用户要求英文。用中文输出所有自然语言文本。
+
+Flutter music player app (`app/`).
+
 Flutter music player app (`app/`).
 
 ## App (`app/`)

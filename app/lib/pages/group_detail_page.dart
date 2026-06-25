@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
@@ -40,28 +41,56 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
   Future<void> _confirmRemoveTrack(LocalTrack track) async {
     final l10n = AppLocalizations.of(context)!;
     final groupProv = context.read<GroupProvider>();
+    final playlist = context.read<PlaylistProvider>();
     final groupName = groupProv.groups
         .firstWhere((g) => g.id == widget.groupId)
         .name;
-    final confirmed = await showDialog<bool>(
+    var deleteFile = false;
+    final result = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.delete),
-        content: Text(l10n.homeRemoveTrackFromGroup(groupName)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(l10n.delete),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.homeRemoveTrackFromGroup(groupName)),
+              const SizedBox(height: 16),
+              CheckboxListTile(
+                value: deleteFile,
+                onChanged: (v) => setDialogState(() => deleteFile = v ?? false),
+                title: Text(l10n.alsoDeleteFile),
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.delete),
-          ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.delete),
+            ),
+          ],
+        ),
       ),
     );
-    if (confirmed != true) return;
-    await groupProv.removeTrack(widget.groupId, track.id);
+    if (result != true) return;
+    if (deleteFile) {
+      try {
+        final file = File(track.filePath);
+        if (await file.exists()) await file.delete();
+      } catch (_) {}
+      await playlist.removeTrackFromMaster(track.id);
+      await groupProv.load();
+    } else {
+      await groupProv.removeTrack(widget.groupId, track.id);
+    }
     await _load();
     if (!mounted) return;
     toastification.show(
@@ -113,6 +142,86 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
             const SizedBox(height: 8),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _showEditTrackDialog(LocalTrack track) async {
+    final l10n = AppLocalizations.of(context)!;
+    final titleCtl = TextEditingController(text: track.title);
+    final artistCtl = TextEditingController(text: track.artist);
+    final albumCtl = TextEditingController(text: track.album);
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.editMetadata),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleCtl,
+              decoration: InputDecoration(
+                labelText: l10n.editTrackTitle,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: artistCtl,
+              decoration: InputDecoration(
+                labelText: l10n.editTrackArtist,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: albumCtl,
+              decoration: InputDecoration(
+                labelText: l10n.editTrackAlbum,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final title = titleCtl.text.trim();
+              if (title.isEmpty) return;
+              try {
+                await context.read<PlaylistProvider>().editTrackMetadata(
+                  track,
+                  title: title,
+                  artist: artistCtl.text.trim(),
+                  album: albumCtl.text.trim(),
+                );
+                await _load();
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                toastification.show(
+                  context: context,
+                  title: Text(l10n.editSuccess),
+                  type: ToastificationType.success,
+                  autoCloseDuration: const Duration(seconds: 2),
+                );
+              } catch (_) {
+                if (!ctx.mounted) return;
+                toastification.show(
+                  context: context,
+                  title: Text(l10n.editFailed),
+                  type: ToastificationType.error,
+                  autoCloseDuration: const Duration(seconds: 3),
+                );
+              }
+            },
+            child: Text(l10n.save),
+          ),
+        ],
       ),
     );
   }
@@ -175,6 +284,13 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                           foregroundColor: colorScheme.onPrimary,
                           icon: Icons.playlist_add,
                           label: l10n.homeAddToGroup,
+                        ),
+                        SlidableAction(
+                          onPressed: (_) => _showEditTrackDialog(track),
+                          backgroundColor: colorScheme.tertiary,
+                          foregroundColor: colorScheme.onTertiary,
+                          icon: Icons.edit,
+                          label: l10n.edit,
                         ),
                         SlidableAction(
                           onPressed: (_) => _confirmRemoveTrack(track),

@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -108,6 +110,56 @@ class MusicHandler {
     await DatabaseService.deleteScannedTrack(trackId);
     await DatabaseService.removeTrackFromAllGroups(trackId);
     _notify();
+  }
+
+  Future<void> editTrackMetadata(
+    LocalTrack track, {
+    required String title,
+    required String artist,
+    required String album,
+  }) async {
+    final updated = track.copyWith(title: title, artist: artist, album: album);
+    final idx = _allTracks.indexWhere((t) => t.id == track.id);
+    if (idx >= 0) {
+      _allTracks[idx] = updated;
+    }
+    final qIdx = _localQueue.indexWhere((t) => t.id == track.id);
+    if (qIdx >= 0) {
+      _localQueue[qIdx] = updated;
+    }
+    await DatabaseService.saveTrackEdit(
+      track.id,
+      title: title,
+      artist: artist,
+      album: album,
+    );
+    await DatabaseService.updateScannedTrack(
+      track.id,
+      title: title,
+      artist: artist,
+      album: album,
+    );
+    await DatabaseService.updateTrackInGroups(
+      track.id,
+      title: title,
+      artist: artist,
+      album: album,
+    );
+    _notify();
+
+    // 写入音频文件元数据
+    try {
+      final file = File(track.filePath);
+      if (await file.exists()) {
+        updateMetadata(file, (metadata) {
+          metadata.setTitle(title);
+          metadata.setArtist(artist);
+          if (album.isNotEmpty) metadata.setAlbum(album);
+        });
+      }
+    } catch (e) {
+      debugPrint('editTrackMetadata: write to file failed: $e');
+    }
   }
 
   Future<void> loadCachedTracks() async {

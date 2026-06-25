@@ -8,7 +8,7 @@ import '../models/local_track.dart';
 class DatabaseService {
   DatabaseService._();
   static Database? _db;
-  static const int _targetVersion = 4;
+  static const int _targetVersion = 5;
 
   static Future<Database> get database async {
     _db ??= await _open();
@@ -91,6 +91,15 @@ class DatabaseService {
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       )
     ''');
+    db.execute('''
+      CREATE TABLE IF NOT EXISTS track_edits (
+        track_id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        artist TEXT DEFAULT '',
+        album TEXT DEFAULT '',
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    ''');
   }
 
   static void _migrate(Database db, int oldVersion) {
@@ -125,6 +134,17 @@ class DatabaseService {
           db.execute(sql);
         } catch (_) {}
       }
+    }
+    if (oldVersion < 5) {
+      db.execute('''
+        CREATE TABLE IF NOT EXISTS track_edits (
+          track_id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          artist TEXT DEFAULT '',
+          album TEXT DEFAULT '',
+          updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+      ''');
     }
   }
 
@@ -317,17 +337,29 @@ class DatabaseService {
     final rows = _toList(
       db.select('SELECT * FROM scanned_tracks ORDER BY rowid ASC'),
     );
+    final edits = await loadTrackEdits();
     return rows
         .map(
-          (r) => LocalTrack(
-            id: r['id'] as String,
-            filePath: r['file_path'] as String,
-            title: r['title'] as String,
-            artist: r['artist'] as String,
-            extension: r['ext'] as String,
-            album: (r['album'] as String?) ?? '',
-            durationMs: (r['duration_ms'] as int?) ?? 0,
-          ),
+          (r) {
+            final track = LocalTrack(
+              id: r['id'] as String,
+              filePath: r['file_path'] as String,
+              title: r['title'] as String,
+              artist: r['artist'] as String,
+              extension: r['ext'] as String,
+              album: (r['album'] as String?) ?? '',
+              durationMs: (r['duration_ms'] as int?) ?? 0,
+            );
+            final edit = edits[track.id];
+            if (edit != null) {
+              return track.copyWith(
+                title: edit.title,
+                artist: edit.artist,
+                album: edit.album,
+              );
+            }
+            return track;
+          },
         )
         .toList();
   }
@@ -360,5 +392,65 @@ class DatabaseService {
       db.select('SELECT track_id, rating FROM track_ratings'),
     );
     return {for (final r in rows) r['track_id'] as String: r['rating'] as int};
+  }
+
+  // ─── Track Edits ──────────────────────────────────────────────
+
+  static Future<void> saveTrackEdit(
+    String trackId, {
+    required String title,
+    required String artist,
+    required String album,
+  }) async {
+    final db = await database;
+    db.execute(
+      'INSERT OR REPLACE INTO track_edits(track_id, title, artist, album, updated_at) VALUES (?, ?, ?, ?, ?)',
+      [trackId, title, artist, album, DateTime.now().toIso8601String()],
+    );
+  }
+
+  static Future<Map<String, ({String title, String artist, String album})>>
+  loadTrackEdits() async {
+    final db = await database;
+    final rows = _toList(db.select('SELECT * FROM track_edits'));
+    return {
+      for (final r in rows)
+        r['track_id'] as String: (
+          title: r['title'] as String,
+          artist: (r['artist'] as String?) ?? '',
+          album: (r['album'] as String?) ?? '',
+        ),
+    };
+  }
+
+  static Future<void> deleteTrackEdit(String trackId) async {
+    final db = await database;
+    db.execute('DELETE FROM track_edits WHERE track_id = ?', [trackId]);
+  }
+
+  static Future<void> updateTrackInGroups(
+    String trackId, {
+    required String title,
+    required String artist,
+    required String album,
+  }) async {
+    final db = await database;
+    db.execute(
+      'UPDATE group_tracks SET track_title = ?, track_artist = ?, track_album = ? WHERE track_id = ?',
+      [title, artist, album, trackId],
+    );
+  }
+
+  static Future<void> updateScannedTrack(
+    String trackId, {
+    required String title,
+    required String artist,
+    required String album,
+  }) async {
+    final db = await database;
+    db.execute(
+      'UPDATE scanned_tracks SET title = ?, artist = ?, album = ? WHERE id = ?',
+      [title, artist, album, trackId],
+    );
   }
 }

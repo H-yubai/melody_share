@@ -40,6 +40,26 @@ class LocalTrack {
     );
   }
 
+  LocalTrack copyWith({
+    String? id,
+    String? filePath,
+    String? title,
+    String? artist,
+    String? extension,
+    int? durationMs,
+    String? album,
+  }) {
+    return LocalTrack(
+      id: id ?? this.id,
+      filePath: filePath ?? this.filePath,
+      title: title ?? this.title,
+      artist: artist ?? this.artist,
+      extension: extension ?? this.extension,
+      durationMs: durationMs ?? this.durationMs,
+      album: album ?? this.album,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

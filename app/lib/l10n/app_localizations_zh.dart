@@ -179,6 +179,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get english => 'English';
 
   @override
+  String get edit => '编辑';
+
+  @override
+  String get editMetadata => '编辑元数据';
+
+  @override
+  String get editTrackTitle => '标题';
+
+  @override
+  String get editTrackArtist => '艺术家';
+
+  @override
+  String get editTrackAlbum => '专辑';
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get editSuccess => '元数据已更新';
+
+  @override
+  String get editFailed => '元数据更新失败';
+
+  @override
   String get homeAddToGroup => '添加到分组';
 
   @override
@@ -188,6 +212,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String homeRemoveTrackFromGroup(String name) {
     return '确定从「$name」中移除此曲目？';
   }
+
+  @override
+  String get alsoDeleteFile => '同时删除本地文件';
 
   @override
   String get homeTrackRemoved => '已移出曲目';

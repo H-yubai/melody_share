@@ -181,6 +181,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get english => 'English';
 
   @override
+  String get edit => 'Edit';
+
+  @override
+  String get editMetadata => 'Edit Metadata';
+
+  @override
+  String get editTrackTitle => 'Title';
+
+  @override
+  String get editTrackArtist => 'Artist';
+
+  @override
+  String get editTrackAlbum => 'Album';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get editSuccess => 'Metadata updated';
+
+  @override
+  String get editFailed => 'Failed to update metadata';
+
+  @override
   String get homeAddToGroup => 'Add to Group';
 
   @override
@@ -190,6 +214,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String homeRemoveTrackFromGroup(String name) {
     return 'Remove this track from \"$name\"?';
   }
+
+  @override
+  String get alsoDeleteFile => 'Also delete local file';
 
   @override
   String get homeTrackRemoved => 'Track removed';

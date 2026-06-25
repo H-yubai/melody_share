@@ -41,6 +41,21 @@ class PlaylistProvider extends ChangeNotifier {
 
   Future<void> seek(Duration position) => _handler.player.seek(position);
 
+  Future<void> editTrackMetadata(
+    LocalTrack track, {
+    required String title,
+    required String artist,
+    required String album,
+  }) async {
+    await _handler.editTrackMetadata(
+      track,
+      title: title,
+      artist: artist,
+      album: album,
+    );
+    notifyListeners();
+  }
+
   Future<void> removeTrackFromMaster(String trackId) async {
     await _handler.removeTrackFromMaster(trackId);
     notifyListeners();

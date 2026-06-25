@@ -86,6 +86,14 @@
   "sortByCount": "By count",
   "chinese": "Chinese",
   "english": "English",
+  "edit": "Edit",
+  "editMetadata": "Edit Metadata",
+  "editTrackTitle": "Title",
+  "editTrackArtist": "Artist",
+  "editTrackAlbum": "Album",
+  "save": "Save",
+  "editSuccess": "Metadata updated",
+  "editFailed": "Failed to update metadata",
   "homeAddToGroup": "Add to Group",
   "homeRemoveTrackConfirmAll": "Remove this track from all groups?",
   "homeRemoveTrackFromGroup": "Remove this track from \"{name}\"?",
@@ -96,6 +104,7 @@
       }
     }
   },
+  "alsoDeleteFile": "Also delete local file",
   "homeTrackRemoved": "Track removed",
   "homeCreateFailed": "Create failed",
   "homeCreateSuccess": "Playlist created",

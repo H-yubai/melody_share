@@ -83,6 +83,14 @@
   "sortByCount": "按数量",
   "chinese": "中文",
   "english": "English",
+  "edit": "编辑",
+  "editMetadata": "编辑元数据",
+  "editTrackTitle": "标题",
+  "editTrackArtist": "艺术家",
+  "editTrackAlbum": "专辑",
+  "save": "保存",
+  "editSuccess": "元数据已更新",
+  "editFailed": "元数据更新失败",
   "homeAddToGroup": "添加到分组",
   "homeRemoveTrackConfirmAll": "确定从所有分组中移除此曲目？",
   "homeRemoveTrackFromGroup": "确定从「{name}」中移除此曲目？",
@@ -93,6 +101,7 @@
       }
     }
   },
+  "alsoDeleteFile": "同时删除本地文件",
   "homeTrackRemoved": "已移出曲目",
   "homeCreateFailed": "创建失败",
   "homeCreateSuccess": "歌单创建成功",

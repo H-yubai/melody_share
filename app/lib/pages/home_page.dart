@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
@@ -640,6 +641,13 @@ class _HomePageState extends State<HomePage> {
                                   label: l10n.homeAddToGroup,
                                 ),
                                 SlidableAction(
+                                  onPressed: (_) => _showEditTrackDialog(track),
+                                  backgroundColor: colorScheme.tertiary,
+                                  foregroundColor: colorScheme.onTertiary,
+                                  icon: Icons.edit,
+                                  label: l10n.edit,
+                                ),
+                                SlidableAction(
                                   onPressed: (_) => _confirmRemoveTrack(track),
                                   backgroundColor: colorScheme.error,
                                   foregroundColor: colorScheme.onError,
@@ -1157,29 +1165,54 @@ class _HomePageState extends State<HomePage> {
     final groupName = _selectedGroupId != null
         ? groupProv.groups.firstWhere((g) => g.id == _selectedGroupId).name
         : null;
-    final confirmed = await showDialog<bool>(
+    var deleteFile = false;
+    final result = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.delete),
-        content: Text(
-          groupName != null
-              ? l10n.homeRemoveTrackFromGroup(groupName)
-              : l10n.homeRemoveTrackConfirmAll,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(l10n.delete),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                groupName != null
+                    ? l10n.homeRemoveTrackFromGroup(groupName)
+                    : l10n.homeRemoveTrackConfirmAll,
+              ),
+              const SizedBox(height: 16),
+              CheckboxListTile(
+                value: deleteFile,
+                onChanged: (v) => setDialogState(() => deleteFile = v ?? false),
+                title: Text(l10n.alsoDeleteFile),
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.delete),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.delete),
-          ),
-        ],
       ),
     );
-    if (confirmed != true) return;
-    if (_selectedGroupId != null) {
+    if (result != true) return;
+    if (deleteFile) {
+      try {
+        final file = File(track.filePath);
+        if (await file.exists()) await file.delete();
+      } catch (_) {}
+      await playlist.removeTrackFromMaster(track.id);
+      await groupProv.load();
+    } else if (_selectedGroupId != null) {
       await groupProv.removeTrack(_selectedGroupId!, track.id);
     } else {
       await playlist.removeTrackFromMaster(track.id);
@@ -1235,6 +1268,85 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 8),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _showEditTrackDialog(LocalTrack track) async {
+    final l10n = AppLocalizations.of(context)!;
+    final titleCtl = TextEditingController(text: track.title);
+    final artistCtl = TextEditingController(text: track.artist);
+    final albumCtl = TextEditingController(text: track.album);
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.editMetadata),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleCtl,
+              decoration: InputDecoration(
+                labelText: l10n.editTrackTitle,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: artistCtl,
+              decoration: InputDecoration(
+                labelText: l10n.editTrackArtist,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: albumCtl,
+              decoration: InputDecoration(
+                labelText: l10n.editTrackAlbum,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final title = titleCtl.text.trim();
+              if (title.isEmpty) return;
+              try {
+                await context.read<PlaylistProvider>().editTrackMetadata(
+                  track,
+                  title: title,
+                  artist: artistCtl.text.trim(),
+                  album: albumCtl.text.trim(),
+                );
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                toastification.show(
+                  context: context,
+                  title: Text(l10n.editSuccess),
+                  type: ToastificationType.success,
+                  autoCloseDuration: const Duration(seconds: 2),
+                );
+              } catch (_) {
+                if (!ctx.mounted) return;
+                toastification.show(
+                  context: context,
+                  title: Text(l10n.editFailed),
+                  type: ToastificationType.error,
+                  autoCloseDuration: const Duration(seconds: 3),
+                );
+              }
+            },
+            child: Text(l10n.save),
+          ),
+        ],
       ),
     );
   }

@@ -422,6 +422,54 @@ abstract class AppLocalizations {
   /// **'English'**
   String get english;
 
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @editMetadata.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Metadata'**
+  String get editMetadata;
+
+  /// No description provided for @editTrackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get editTrackTitle;
+
+  /// No description provided for @editTrackArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get editTrackArtist;
+
+  /// No description provided for @editTrackAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get editTrackAlbum;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @editSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Metadata updated'**
+  String get editSuccess;
+
+  /// No description provided for @editFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update metadata'**
+  String get editFailed;
+
   /// No description provided for @homeAddToGroup.
   ///
   /// In en, this message translates to:
@@ -439,6 +487,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove this track from \"{name}\"?'**
   String homeRemoveTrackFromGroup(String name);
+
+  /// No description provided for @alsoDeleteFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Also delete local file'**
+  String get alsoDeleteFile;
 
   /// No description provided for @homeTrackRemoved.
   ///
