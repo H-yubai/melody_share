@@ -355,9 +355,18 @@ Array.from(window.__gs_sniff || []).join('\n')
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.drawerUploadMusic),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: _goBack,
+          leading: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: _goBack,
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
           ),
           actions: [
             IconButton(
