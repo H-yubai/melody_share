@@ -705,20 +705,24 @@ class _PlayerPageState extends State<PlayerPage> {
                           itemBuilder: (ctx, i) {
                             final t = queue[i];
                             final isCurrent = i == currentIdx;
-                            return ListTile(
-                              tileColor: isCurrent
-                                  ? colorScheme.primaryContainer.withValues(
-                                      alpha: 0.3,
-                                    )
-                                  : null,
+                            final tile = ListTile(
+                              tileColor: isCurrent ? Colors.transparent : null,
                               dense: true,
-                              leading: Icon(
-                                isCurrent ? Icons.music_note : Icons.audiotrack,
-                                size: 18,
-                                color: isCurrent
-                                    ? colorScheme.primary
-                                    : colorScheme.onSurfaceVariant,
-                              ),
+                              leading: isCurrent
+                                  ? SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: Lottie.asset(
+                                        'assets/animations/lottie/Play dvd, disk.json',
+                                        fit: BoxFit.contain,
+                                        animate: playlist.isPlaying,
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.audiotrack,
+                                      size: 18,
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
                               title: Text(
                                 t.displayTitle,
                                 maxLines: 1,
@@ -769,6 +773,27 @@ class _PlayerPageState extends State<PlayerPage> {
                                 Navigator.pop(ctx);
                               },
                             );
+                            return isCurrent
+                                ? Stack(
+                                    children: [
+                                      Positioned.fill(
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                          child: Opacity(
+                                            opacity: 0.2,
+                                            child: Lottie.asset(
+                                              'assets/animations/lottie/Music Notes.json',
+                                              fit: BoxFit.contain,
+                                              repeat: true,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      tile,
+                                    ],
+                                  )
+                                : tile;
                           },
                         ),
                 ),

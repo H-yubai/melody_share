@@ -8,6 +8,7 @@ import '../l10n/app_localizations.dart';
 import '../models/local_track.dart';
 import '../provider/group_provider.dart';
 import '../provider/playlist_provider.dart';
+import 'package:lottie/lottie.dart';
 
 class GroupDetailPage extends StatefulWidget {
   final int groupId;
@@ -273,6 +274,56 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                       ? l10n.unknownArtist
                       : track.displayArtist;
 
+                  final tile = ListTile(
+                    leading: isCurrent
+                        ? SizedBox(
+                            width: 36,
+                            height: 36,
+                            child: Lottie.asset(
+                              'assets/animations/lottie/Play dvd, disk.json',
+                              fit: BoxFit.contain,
+                              animate: playlist.isPlaying,
+                            ),
+                          )
+                        : CircleAvatar(
+                            backgroundColor:
+                                colorScheme.surfaceContainerHighest,
+                            child: Icon(
+                              Icons.audiotrack,
+                              color: colorScheme.onSurfaceVariant,
+                              size: 20,
+                            ),
+                          ),
+                    title: Text(
+                      track.displayTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            artist,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (track.displayDuration.isNotEmpty)
+                          Text(
+                            ' ${track.displayDuration}',
+                            style: TextStyle(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                      ],
+                    ),
+                    onTap: () {
+                      context.read<PlaylistProvider>().playTracks(
+                        _tracks!,
+                        startIndex: index,
+                      );
+                    },
+                  );
                   return Slidable(
                     key: ValueKey(track.id),
                     endActionPane: ActionPane(
@@ -303,53 +354,25 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                     ),
                     child: Card(
                       elevation: isCurrent ? 2 : 0,
-                      color: isCurrent
-                          ? colorScheme.primaryContainer.withValues(alpha: 0.3)
-                          : colorScheme.surface,
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: isCurrent
-                              ? colorScheme.primary
-                              : colorScheme.surfaceContainerHighest,
-                          child: Icon(
-                            isCurrent ? Icons.music_note : Icons.audiotrack,
-                            color: isCurrent
-                                ? colorScheme.onPrimary
-                                : colorScheme.onSurfaceVariant,
-                            size: 20,
-                          ),
-                        ),
-                        title: Text(
-                          track.displayTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                artist,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (track.displayDuration.isNotEmpty)
-                              Text(
-                                ' ${track.displayDuration}',
-                                style: TextStyle(
-                                  color: colorScheme.onSurfaceVariant,
+                      color: colorScheme.surface,
+                      clipBehavior: Clip.antiAlias,
+                      child: isCurrent
+                          ? Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Opacity(
+                                    opacity: 0.2,
+                                    child: Lottie.asset(
+                                      'assets/animations/lottie/Music Notes.json',
+                                      fit: BoxFit.contain,
+                                      repeat: true,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                          ],
-                        ),
-                        onTap: () {
-                          context.read<PlaylistProvider>().playTracks(
-                            _tracks!,
-                            startIndex: index,
-                          );
-                          context.push('/player');
-                        },
-                      ),
+                                tile,
+                              ],
+                            )
+                          : tile,
                     ),
                   );
                 },
