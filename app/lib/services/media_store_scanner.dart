@@ -10,6 +10,18 @@ class MediaStoreScanner {
 
   static const _channel = MethodChannel('guangling/mediastore');
 
+  static Future<bool> deleteAudioFile(String filePath) async {
+    if (kIsWeb || !Platform.isAndroid) return false;
+    try {
+      final result = await _channel.invokeMethod<bool>('deleteAudioFile', {
+        'filePath': filePath,
+      });
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Future<List<LocalTrack>> scanAudio({
     void Function(String dir, int count)? onProgress,
   }) async {

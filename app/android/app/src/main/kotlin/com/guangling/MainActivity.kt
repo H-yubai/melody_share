@@ -15,10 +15,10 @@ class MainActivity : FlutterActivity() {
             flutterEngine.dartExecutor.binaryMessenger,
             "guangling/mediastore"
         ).setMethodCallHandler { call, result ->
-            if (call.method == "scanAudio") {
-                scanAudio(result)
-            } else {
-                result.notImplemented()
+            when (call.method) {
+                "scanAudio" -> scanAudio(result)
+                "deleteAudioFile" -> deleteAudioFile(call, result)
+                else -> result.notImplemented()
             }
         }
 
@@ -58,6 +58,27 @@ class MainActivity : FlutterActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun deleteAudioFile(call: MethodCall, result: MethodChannel.Result) {
+        val filePath = call.argument<String>("filePath") ?: ""
+        if (filePath.isEmpty()) {
+            result.success(false)
+            return
+        }
+        try {
+            // 1. Remove record from MediaStore database to prevent re-indexing
+            val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+            val where = "${MediaStore.Audio.Media.DATA} = ?"
+            contentResolver.delete(uri, where, arrayOf(filePath))
+
+            // 2. Delete the physical file
+            val file = java.io.File(filePath)
+            val deleted = if (file.exists()) file.delete() else true
+            result.success(deleted)
+        } catch (e: Exception) {
+            result.error("DELETE_FAILED", e.message, null)
         }
     }
 

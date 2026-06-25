@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../models/local_track.dart';
 import '../provider/group_provider.dart';
 import '../provider/playlist_provider.dart';
+import '../services/media_store_scanner.dart';
 import 'package:lottie/lottie.dart';
 
 class GroupDetailPage extends StatefulWidget {
@@ -83,10 +85,19 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
     );
     if (result != true) return;
     if (deleteFile) {
-      try {
-        final file = File(track.filePath);
-        if (await file.exists()) await file.delete();
-      } catch (_) {}
+      var deleted = false;
+      if (!kIsWeb && Platform.isAndroid) {
+        deleted = await MediaStoreScanner.deleteAudioFile(track.filePath);
+      }
+      if (!deleted) {
+        try {
+          final file = File(track.filePath);
+          if (await file.exists()) {
+            await file.delete();
+            deleted = true;
+          }
+        } catch (_) {}
+      }
       await playlist.removeTrackFromMaster(track.id);
       await groupProv.load();
     } else {
