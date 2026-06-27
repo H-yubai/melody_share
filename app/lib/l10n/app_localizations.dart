@@ -595,6 +595,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No audio files found.'**
   String get webviewNoAudio;
+
+  /// No description provided for @fullScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Scan'**
+  String get fullScan;
+
+  /// No description provided for @fullScanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep scan all storage directories'**
+  String get fullScanSubtitle;
+
+  /// No description provided for @changeAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Appearance'**
+  String get changeAppearance;
+
+  /// No description provided for @scanCustomDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Custom Directory'**
+  String get scanCustomDirectory;
+
+  /// No description provided for @scanComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan complete: {count} tracks found'**
+  String scanComplete(int count);
+
+  /// No description provided for @quickScanComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick scan complete: {count} tracks found'**
+  String quickScanComplete(int count);
+
+  /// No description provided for @fullScanComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Full scan complete: {count} tracks found'**
+  String fullScanComplete(int count);
+
+  /// No description provided for @enterDirectoryPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the folder path to scan:'**
+  String get enterDirectoryPath;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
 }
 
 class _AppLocalizationsDelegate

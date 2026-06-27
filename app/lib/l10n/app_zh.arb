@@ -139,5 +139,35 @@
     }
   },
   "webviewNoResources": "尚未检测到资源。\n浏览页面后重试。",
-  "webviewNoAudio": "未找到音频文件。"
+  "webviewNoAudio": "未找到音频文件。",
+  "fullScan": "完整扫描",
+  "fullScanSubtitle": "深度扫描所有存储目录",
+  "changeAppearance": "更改外观",
+  "scanCustomDirectory": "扫描自定义目录",
+  "scanComplete": "扫描完成，共 {count} 首歌曲",
+  "@scanComplete": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quickScanComplete": "快速扫描完成，共 {count} 首歌曲",
+  "@quickScanComplete": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fullScanComplete": "完整扫描完成，共 {count} 首歌曲",
+  "@fullScanComplete": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "enterDirectoryPath": "输入要扫描的文件夹路径：",
+  "done": "完成"
 }

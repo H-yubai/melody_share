@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import '../provider/animation_provider.dart';
+import '../l10n/app_localizations.dart';
 
 class AnimationPickerPage extends StatefulWidget {
   const AnimationPickerPage({super.key});
@@ -33,17 +34,18 @@ class _AnimationPickerPageState extends State<AnimationPickerPage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('更改外观'),
+        title: Text(l10n.changeAppearance),
         actions: [
           TextButton(
             onPressed: () {
               context.read<AnimationProvider>().setIndex(_selectedIndex);
               Navigator.pop(context);
             },
-            child: const Text('完成'),
+             child: Text(l10n.done),
           ),
         ],
       ),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:toastification/toastification.dart';
@@ -73,7 +74,8 @@ class _WebViewPageState extends State<WebViewPage> {
   }
 
   Future<void> _injectSniffer() async {
-    await _controller?.evaluateJavascript(source: r'''
+    await _controller?.evaluateJavascript(
+      source: r'''
 (function() {
   if (window.__gs_sniff) return;
   window.__gs_sniff = new Set();
@@ -95,13 +97,16 @@ class _WebViewPageState extends State<WebViewPage> {
     if (/\.(mp3|wav|flac|aac|ogg|m4a|wma)(\?|#|$)/i.test(h)) add(h);
   });
 })();
-''');
+''',
+    );
   }
 
   Future<void> _collectResources() async {
-    final result = await _controller?.evaluateJavascript(source: r'''
+    final result = await _controller?.evaluateJavascript(
+      source: r'''
 Array.from(window.__gs_sniff || []).join('\n')
-''');
+''',
+    );
     if (result is String && result.isNotEmpty) {
       for (final url in result.split('\n')) {
         if (url.isNotEmpty && !_resources.contains(url)) {
@@ -154,12 +159,13 @@ Array.from(window.__gs_sniff || []).join('\n')
                       _audioOnly ? Icons.filter_list : Icons.music_note,
                       size: 18,
                     ),
-                    label: Text(_audioOnly ? l10n.webviewShowAll : l10n.webviewAudioOnly),
+                    label: Text(
+                      _audioOnly ? l10n.webviewShowAll : l10n.webviewAudioOnly,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   TextButton.icon(
-                    onPressed:
-                        display.isEmpty ? null : () => _downloadAll(ctx),
+                    onPressed: display.isEmpty ? null : () => _downloadAll(ctx),
                     icon: const Icon(Icons.download, size: 18),
                     label: Text(l10n.webviewDownloadAll),
                   ),
@@ -175,10 +181,9 @@ Array.from(window.__gs_sniff || []).join('\n')
                             ? l10n.webviewNoResources
                             : l10n.webviewNoAudio,
                         textAlign: TextAlign.center,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(color: Colors.grey),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                       ),
                     )
                   : ListView.builder(
@@ -294,15 +299,17 @@ Array.from(window.__gs_sniff || []).join('\n')
       if (!await dir.exists()) await dir.create(recursive: true);
       final savePath = '${dir.path}/$safeName';
 
-      final dio = Dio(BaseOptions(
-        followRedirects: true,
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 30),
-        headers: {
-          HttpHeaders.userAgentHeader:
-              'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36',
-        },
-      ));
+      final dio = Dio(
+        BaseOptions(
+          followRedirects: true,
+          connectTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 30),
+          headers: {
+            HttpHeaders.userAgentHeader:
+                'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36',
+          },
+        ),
+      );
 
       await dio.download(
         url,
@@ -355,6 +362,7 @@ Array.from(window.__gs_sniff || []).join('\n')
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.drawerUploadMusic),
+          leadingWidth: 100,
           leading: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -364,7 +372,7 @@ Array.from(window.__gs_sniff || []).join('\n')
               ),
               IconButton(
                 icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => context.go('/'),
               ),
             ],
           ),
@@ -380,17 +388,12 @@ Array.from(window.__gs_sniff || []).join('\n')
         body: Stack(
           children: [
             InAppWebView(
-              initialUrlRequest: URLRequest(
-                url: WebUri('https://higequ.com/'),
-              ),
-              initialSettings: InAppWebViewSettings(
-                javaScriptEnabled: true,
-              ),
+              initialUrlRequest: URLRequest(url: WebUri('https://higequ.com/')),
+              initialSettings: InAppWebViewSettings(javaScriptEnabled: true),
               onWebViewCreated: (controller) {
                 _controller = controller;
               },
-              shouldOverrideUrlLoading:
-                  (controller, navigationAction) async {
+              shouldOverrideUrlLoading: (controller, navigationAction) async {
                 final uri = navigationAction.request.url;
                 if (uri != null) {
                   final scheme = uri.scheme;
@@ -429,8 +432,7 @@ Array.from(window.__gs_sniff || []).join('\n')
                 }
               },
             ),
-            if (_isLoading)
-              const LinearProgressIndicator(),
+            if (_isLoading) const LinearProgressIndicator(),
           ],
         ),
       ),

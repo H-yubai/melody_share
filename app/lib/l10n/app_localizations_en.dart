@@ -275,4 +275,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get webviewNoAudio => 'No audio files found.';
+
+  @override
+  String get fullScan => 'Full Scan';
+
+  @override
+  String get fullScanSubtitle => 'Deep scan all storage directories';
+
+  @override
+  String get changeAppearance => 'Change Appearance';
+
+  @override
+  String get scanCustomDirectory => 'Scan Custom Directory';
+
+  @override
+  String scanComplete(int count) {
+    return 'Scan complete: $count tracks found';
+  }
+
+  @override
+  String quickScanComplete(int count) {
+    return 'Quick scan complete: $count tracks found';
+  }
+
+  @override
+  String fullScanComplete(int count) {
+    return 'Full scan complete: $count tracks found';
+  }
+
+  @override
+  String get enterDirectoryPath => 'Enter the folder path to scan:';
+
+  @override
+  String get done => 'Done';
 }

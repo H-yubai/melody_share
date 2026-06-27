@@ -25,7 +25,7 @@
   "drawerDarkMode": "Dark Mode",
   "drawerAbout": "About",
   "drawerLanguage": "Language",
-  "comingSoon": "{feature} \u2014 coming soon!",
+  "comingSoon": "{feature} — coming soon!",
   "@comingSoon": {
     "description": "Placeholder message for unimplemented features",
     "placeholders": {
@@ -142,5 +142,35 @@
     }
   },
   "webviewNoResources": "No resources detected yet.\nBrowse the page and try again.",
-  "webviewNoAudio": "No audio files found."
+  "webviewNoAudio": "No audio files found.",
+  "fullScan": "Full Scan",
+  "fullScanSubtitle": "Deep scan all storage directories",
+  "changeAppearance": "Change Appearance",
+  "scanCustomDirectory": "Scan Custom Directory",
+  "scanComplete": "Scan complete: {count} tracks found",
+  "@scanComplete": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quickScanComplete": "Quick scan complete: {count} tracks found",
+  "@quickScanComplete": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fullScanComplete": "Full scan complete: {count} tracks found",
+  "@fullScanComplete": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "enterDirectoryPath": "Enter the folder path to scan:",
+  "done": "Done"
 }

@@ -272,4 +272,37 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get webviewNoAudio => '未找到音频文件。';
+
+  @override
+  String get fullScan => '完整扫描';
+
+  @override
+  String get fullScanSubtitle => '深度扫描所有存储目录';
+
+  @override
+  String get changeAppearance => '更改外观';
+
+  @override
+  String get scanCustomDirectory => '扫描自定义目录';
+
+  @override
+  String scanComplete(int count) {
+    return '扫描完成，共 $count 首歌曲';
+  }
+
+  @override
+  String quickScanComplete(int count) {
+    return '快速扫描完成，共 $count 首歌曲';
+  }
+
+  @override
+  String fullScanComplete(int count) {
+    return '完整扫描完成，共 $count 首歌曲';
+  }
+
+  @override
+  String get enterDirectoryPath => '输入要扫描的文件夹路径：';
+
+  @override
+  String get done => '完成';
 }

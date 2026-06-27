@@ -111,6 +111,7 @@ class _HomePageState extends State<HomePage> {
             );
 
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       context.read<PlaylistProvider>().setAllTracks(tracks);
       try {
         await DatabaseService.saveScannedTracks(tracks);
@@ -122,10 +123,10 @@ class _HomePageState extends State<HomePage> {
       });
       if (mounted) {
         final msg = customPath != null
-            ? '扫描完成，共 ${tracks.length} 首歌曲'
-            : isQuick
-            ? '快速扫描完成，共 ${tracks.length} 首歌曲'
-            : '完整扫描完成，共 ${tracks.length} 首歌曲';
+              ? l10n.scanComplete(tracks.length)
+              : isQuick
+              ? l10n.quickScanComplete(tracks.length)
+              : l10n.fullScanComplete(tracks.length);
         toastification.show(
           context: context,
           title: Text(msg),
@@ -272,15 +273,15 @@ class _HomePageState extends State<HomePage> {
                       _startScan();
                     },
                   ),
-                  _DrawerItem(
-                    icon: Icons.manage_search,
-                    title: '完整扫描',
-                    subtitle: '深度扫描所有存储目录',
-                    onTap: () {
-                      Navigator.pop(context);
-                      _startFullScan();
-                    },
-                  ),
+                   _DrawerItem(
+                     icon: Icons.manage_search,
+                     title: l10n.fullScan,
+                     subtitle: l10n.fullScanSubtitle,
+                     onTap: () {
+                       Navigator.pop(context);
+                       _startFullScan();
+                     },
+                   ),
                   _DrawerItem(
                     icon: Icons.folder_open,
                     title: '自定义路径',
@@ -402,14 +403,14 @@ class _HomePageState extends State<HomePage> {
                       _showLanguageSheet();
                     },
                   ),
-                  _DrawerItem(
-                    icon: Icons.waves,
-                    title: '更改外观',
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showAppearanceSheet();
-                    },
-                  ),
+                   _DrawerItem(
+                     icon: Icons.waves,
+                     title: l10n.changeAppearance,
+                     onTap: () {
+                       Navigator.pop(context);
+                       _showAppearanceSheet();
+                     },
+                   ),
                   _DrawerItem(
                     icon: Icons.info_outline,
                     title: l10n.drawerAbout,
@@ -1394,13 +1395,13 @@ class _HomePageState extends State<HomePage> {
 
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('扫描自定义目录'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('输入要扫描的文件夹路径：'),
+       builder: (ctx) => StatefulBuilder(
+         builder: (ctx, setDialogState) => AlertDialog(
+           title: Text(l10n.scanCustomDirectory),
+           content: Column(
+             mainAxisSize: MainAxisSize.min,
+             children: [
+               Text(l10n.enterDirectoryPath),
               const SizedBox(height: 12),
               TextField(
                 controller: controller,
