@@ -319,4 +319,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get confirm => '确认';
+
+  @override
+  String get drawerCustomPath => '自定义路径';
+
+  @override
+  String get drawerCustomPathSubtitle => '扫描指定目录';
 }

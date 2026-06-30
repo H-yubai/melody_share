@@ -673,6 +673,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Confirm'**
   String get confirm;
+
+  /// No description provided for @drawerCustomPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Path'**
+  String get drawerCustomPath;
+
+  /// No description provided for @drawerCustomPathSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a specific directory'**
+  String get drawerCustomPathSubtitle;
 }
 
 class _AppLocalizationsDelegate

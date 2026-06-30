@@ -183,5 +183,7 @@
     }
   },
   "homeScanConfirmQuick": "Are you sure you want to perform a quick scan?\nThis may take a long time.",
-  "confirm": "Confirm"
+  "confirm": "Confirm",
+  "drawerCustomPath": "Custom Path",
+  "drawerCustomPathSubtitle": "Scan a specific directory"
 }

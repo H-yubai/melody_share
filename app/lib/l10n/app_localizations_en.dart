@@ -323,4 +323,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirm => 'Confirm';
+
+  @override
+  String get drawerCustomPath => 'Custom Path';
+
+  @override
+  String get drawerCustomPathSubtitle => 'Scan a specific directory';
 }

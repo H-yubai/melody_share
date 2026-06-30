@@ -323,8 +323,8 @@ class _HomePageState extends State<HomePage> {
                   ),
                   _DrawerItem(
                     icon: Icons.folder_open,
-                    title: '自定义路径',
-                    subtitle: '扫描指定目录',
+                    title: l10n.drawerCustomPath,
+                    subtitle: l10n.drawerCustomPathSubtitle,
                     onTap: () {
                       Navigator.pop(context);
                       _showCustomPathDialog();
