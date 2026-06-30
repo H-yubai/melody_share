@@ -759,16 +759,7 @@ class _HomePageState extends State<HomePage> {
                             ],
                           ),
                           onTap: () {
-                            // 从allTracks中播放, 要进行index转换
-
-                            final allTracksIndex = allTracks.indexWhere(
-                              (element) => element.id == track.id,
-                            );
-
-                            playlist.playTracks(
-                              allTracks,
-                              startIndex: allTracksIndex,
-                            );
+                            playlist.playTracks(allTracks, startIndex: index);
                           },
                         );
                         return Slidable(
