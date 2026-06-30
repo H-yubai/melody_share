@@ -575,6 +575,8 @@ class _HomePageState extends State<HomePage> {
                   )
                   .toList();
 
+        log.info('搜索列表: ${searchedTracks.toString()}');
+
         if (_isScanning) {
           final scanPath = _scanDir;
           final dirName = scanPath.isNotEmpty ? scanPath.split('/').last : '';
@@ -692,7 +694,10 @@ class _HomePageState extends State<HomePage> {
                       itemScrollController: _itemScrollController,
                       itemBuilder: (context, index) {
                         final track = searchedTracks[index];
-                        final isCurrent = playlist.currentIndex == index;
+                        final currentTrackId = playlist.currentTrack?.id;
+                        final isCurrent =
+                            currentTrackId != null &&
+                            track.id == currentTrackId;
                         final artist = track.displayArtist.isEmpty
                             ? l10n.unknownArtist
                             : track.displayArtist;
@@ -754,9 +759,15 @@ class _HomePageState extends State<HomePage> {
                             ],
                           ),
                           onTap: () {
+                            // 从allTracks中播放, 要进行index转换
+
+                            final allTracksIndex = allTracks.indexWhere(
+                              (element) => element.id == track.id,
+                            );
+
                             playlist.playTracks(
-                              searchedTracks,
-                              startIndex: index,
+                              allTracks,
+                              startIndex: allTracksIndex,
                             );
                           },
                         );
