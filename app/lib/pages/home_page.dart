@@ -575,6 +575,8 @@ class _HomePageState extends State<HomePage> {
                   )
                   .toList();
 
+        log.info('搜索列表: ${searchedTracks.toString()}');
+
         if (_isScanning) {
           final scanPath = _scanDir;
           final dirName = scanPath.isNotEmpty ? scanPath.split('/').last : '';
@@ -754,10 +756,7 @@ class _HomePageState extends State<HomePage> {
                             ],
                           ),
                           onTap: () {
-                            playlist.playTracks(
-                              searchedTracks,
-                              startIndex: index,
-                            );
+                            playlist.playTracks(allTracks, startIndex: index);
                           },
                         );
                         return Slidable(
