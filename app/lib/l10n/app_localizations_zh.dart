@@ -305,4 +305,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get done => '完成';
+
+  @override
+  String get homeScanConfirmTitle => '开始扫描';
+
+  @override
+  String homeScanConfirmCustomPath(String path) {
+    return '确定要扫描自定义路径吗？\n当前路径为：$path。\n这可能需要很长时间。';
+  }
+
+  @override
+  String get homeScanConfirmQuick => '确定要执行快速扫描吗？\n这可能需要很长时间。';
+
+  @override
+  String get confirm => '确认';
 }

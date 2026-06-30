@@ -172,5 +172,16 @@
     }
   },
   "enterDirectoryPath": "Enter the folder path to scan:",
-  "done": "Done"
+  "done": "Done",
+  "homeScanConfirmTitle": "Scan Confirmation",
+  "homeScanConfirmCustomPath": "Are you sure you want to scan the custom path?\n Current: path is {path}.\nThis may take a long time.",
+  "@homeScanConfirmCustomPath": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "homeScanConfirmQuick": "Are you sure you want to perform a quick scan?\nThis may take a long time.",
+  "confirm": "Confirm"
 }

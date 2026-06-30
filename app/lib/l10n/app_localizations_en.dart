@@ -308,4 +308,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get done => 'Done';
+
+  @override
+  String get homeScanConfirmTitle => 'Scan Confirmation';
+
+  @override
+  String homeScanConfirmCustomPath(String path) {
+    return 'Are you sure you want to scan the custom path?\n Current: path is $path.\nThis may take a long time.';
+  }
+
+  @override
+  String get homeScanConfirmQuick =>
+      'Are you sure you want to perform a quick scan?\nThis may take a long time.';
+
+  @override
+  String get confirm => 'Confirm';
 }

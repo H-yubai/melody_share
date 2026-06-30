@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:guangling/config/log_config.dart';
+import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'app.dart';
@@ -12,6 +14,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
   ApiService.init();
+
+  // 初始化日志
+  initLog();
 
   final notificationService = MediaNotificationService();
   notificationService.initialize();

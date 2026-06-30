@@ -169,5 +169,16 @@
     }
   },
   "enterDirectoryPath": "输入要扫描的文件夹路径：",
-  "done": "完成"
+  "done": "完成",
+  "homeScanConfirmTitle": "开始扫描",
+  "homeScanConfirmCustomPath": "确定要扫描自定义路径吗？\n当前路径为：{path}。\n这可能需要很长时间。",
+  "@homeScanConfirmCustomPath": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "homeScanConfirmQuick": "确定要执行快速扫描吗？\n这可能需要很长时间。",
+  "confirm": "确认"
 }

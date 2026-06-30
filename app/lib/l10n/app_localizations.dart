@@ -649,6 +649,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done'**
   String get done;
+
+  /// No description provided for @homeScanConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Confirmation'**
+  String get homeScanConfirmTitle;
+
+  /// No description provided for @homeScanConfirmCustomPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to scan the custom path?\n Current: path is {path}.\nThis may take a long time.'**
+  String homeScanConfirmCustomPath(String path);
+
+  /// No description provided for @homeScanConfirmQuick.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to perform a quick scan?\nThis may take a long time.'**
+  String get homeScanConfirmQuick;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
 }
 
 class _AppLocalizationsDelegate

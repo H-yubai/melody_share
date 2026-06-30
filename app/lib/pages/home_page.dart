@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
+import 'package:guangling/config/log_config.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:toastification/toastification.dart';
 import '../l10n/app_localizations.dart';
 import '../models/group.dart';
@@ -36,7 +38,7 @@ class _HomePageState extends State<HomePage> {
   String _searchQuery = '';
   Timer? _debounceTimer;
   late FocusNode _searchFocusNode;
-
+  final ItemScrollController _itemScrollController = ItemScrollController();
   @override
   void initState() {
     super.initState();
@@ -67,6 +69,35 @@ class _HomePageState extends State<HomePage> {
   Future<void> _startFullScan() => _runScan(isQuick: false);
 
   Future<void> _runScan({required bool isQuick, String? customPath}) async {
+    if (!mounted) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(l10n.homeScanConfirmTitle),
+          content: Text(
+            customPath != null
+                ? l10n.homeScanConfirmCustomPath(customPath)
+                : isQuick
+                ? l10n.homeScanConfirmQuick
+                : l10n.homeScanConfirmQuick,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.confirm),
+            ),
+          ],
+        );
+      },
+    );
+    if (!confirm!) return;
+
     if (_isScanning) return;
     setState(() {
       _isScanning = true;
@@ -640,135 +671,132 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     )
-                  : RefreshIndicator(
-                      onRefresh: _startScan,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                        itemCount: searchedTracks.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 4),
-                        itemBuilder: (context, index) {
-                          final track = searchedTracks[index];
-                          final isCurrent = playlist.currentIndex == index;
-                          final artist = track.displayArtist.isEmpty
-                              ? l10n.unknownArtist
-                              : track.displayArtist;
-                          final tile = ListTile(
-                            leading: isCurrent
-                                ? SizedBox(
-                                    width: 36,
-                                    height: 36,
-                                    child: Lottie.asset(
-                                      'assets/animations/lottie/Play dvd, disk.json',
-                                      fit: BoxFit.contain,
-                                      animate: playlist.isPlaying,
-                                    ),
-                                  )
-                                : CircleAvatar(
-                                    backgroundColor:
-                                        colorScheme.surfaceContainerHighest,
-                                    child: Icon(
-                                      Icons.audiotrack,
-                                      color: colorScheme.onSurfaceVariant,
-                                      size: 20,
-                                    ),
+                  : ScrollablePositionedList.builder(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                      itemCount: searchedTracks.length,
+                      itemScrollController: _itemScrollController,
+                      itemBuilder: (context, index) {
+                        final track = searchedTracks[index];
+                        final isCurrent = playlist.currentIndex == index;
+                        final artist = track.displayArtist.isEmpty
+                            ? l10n.unknownArtist
+                            : track.displayArtist;
+                        final tile = ListTile(
+                          leading: isCurrent
+                              ? SizedBox(
+                                  width: 36,
+                                  height: 36,
+                                  child: Lottie.asset(
+                                    'assets/animations/lottie/Play dvd, disk.json',
+                                    fit: BoxFit.contain,
+                                    animate: playlist.isPlaying,
                                   ),
-                            title: Text(
-                              track.displayTitle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontWeight: isCurrent ? FontWeight.w600 : null,
-                                color: isCurrent ? colorScheme.primary : null,
+                                )
+                              : CircleAvatar(
+                                  backgroundColor:
+                                      colorScheme.surfaceContainerHighest,
+                                  child: Icon(
+                                    Icons.audiotrack,
+                                    color: colorScheme.onSurfaceVariant,
+                                    size: 20,
+                                  ),
+                                ),
+                          title: Text(
+                            track.displayTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: isCurrent ? FontWeight.w600 : null,
+                              color: isCurrent ? colorScheme.primary : null,
+                            ),
+                          ),
+                          subtitle: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  artist,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                            subtitle: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    artist,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                              if (isCurrent) ...[
+                                Icon(
+                                  Icons.equalizer,
+                                  color: colorScheme.primary,
+                                  size: 16,
                                 ),
-                                if (isCurrent) ...[
-                                  Icon(
-                                    Icons.equalizer,
-                                    color: colorScheme.primary,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 4),
-                                ],
-                                if (track.displayDuration.isNotEmpty) ...[
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    track.displayDuration,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
+                                const SizedBox(width: 4),
                               ],
-                            ),
-                            onTap: () {
-                              playlist.playTracks(
-                                searchedTracks,
-                                startIndex: index,
-                              );
-                            },
-                          );
-                          return Slidable(
-                            key: ValueKey(track.id),
-                            endActionPane: ActionPane(
-                              motion: const BehindMotion(),
-                              children: [
-                                SlidableAction(
-                                  onPressed: (_) => _showAddToGroupSheet(track),
-                                  backgroundColor: colorScheme.primary,
-                                  foregroundColor: colorScheme.onPrimary,
-                                  icon: Icons.playlist_add,
-                                  label: l10n.homeAddToGroup,
-                                ),
-                                SlidableAction(
-                                  onPressed: (_) => _showEditTrackDialog(track),
-                                  backgroundColor: colorScheme.tertiary,
-                                  foregroundColor: colorScheme.onTertiary,
-                                  icon: Icons.edit,
-                                  label: l10n.edit,
-                                ),
-                                SlidableAction(
-                                  onPressed: (_) => _confirmRemoveTrack(track),
-                                  backgroundColor: colorScheme.error,
-                                  foregroundColor: colorScheme.onError,
-                                  icon: Icons.delete_outline,
-                                  label: l10n.delete,
+                              if (track.displayDuration.isNotEmpty) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  track.displayDuration,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
                               ],
-                            ),
-                            child: Card(
-                              elevation: isCurrent ? 2 : 0,
-                              color: colorScheme.surface,
-                              clipBehavior: Clip.antiAlias,
-                              child: isCurrent
-                                  ? Stack(
-                                      children: [
-                                        Positioned.fill(
-                                          child: Opacity(
-                                            opacity: 0.2,
-                                            child: Lottie.asset(
-                                              'assets/animations/lottie/Music Notes.json',
-                                              fit: BoxFit.contain,
-                                              repeat: true,
-                                            ),
+                            ],
+                          ),
+                          onTap: () {
+                            playlist.playTracks(
+                              searchedTracks,
+                              startIndex: index,
+                            );
+                          },
+                        );
+                        return Slidable(
+                          key: ValueKey(track.id),
+                          endActionPane: ActionPane(
+                            motion: const BehindMotion(),
+                            children: [
+                              SlidableAction(
+                                onPressed: (_) => _showAddToGroupSheet(track),
+                                backgroundColor: colorScheme.primary,
+                                foregroundColor: colorScheme.onPrimary,
+                                icon: Icons.playlist_add,
+                                label: l10n.homeAddToGroup,
+                              ),
+                              SlidableAction(
+                                onPressed: (_) => _showEditTrackDialog(track),
+                                backgroundColor: colorScheme.tertiary,
+                                foregroundColor: colorScheme.onTertiary,
+                                icon: Icons.edit,
+                                label: l10n.edit,
+                              ),
+                              SlidableAction(
+                                onPressed: (_) => _confirmRemoveTrack(track),
+                                backgroundColor: colorScheme.error,
+                                foregroundColor: colorScheme.onError,
+                                icon: Icons.delete_outline,
+                                label: l10n.delete,
+                              ),
+                            ],
+                          ),
+                          child: Card(
+                            elevation: isCurrent ? 2 : 0,
+                            color: colorScheme.surface,
+                            clipBehavior: Clip.antiAlias,
+                            child: isCurrent
+                                ? Stack(
+                                    children: [
+                                      Positioned.fill(
+                                        child: Opacity(
+                                          opacity: 0.2,
+                                          child: Lottie.asset(
+                                            'assets/animations/lottie/Music Notes.json',
+                                            fit: BoxFit.contain,
+                                            repeat: true,
                                           ),
                                         ),
-                                        tile,
-                                      ],
-                                    )
-                                  : tile,
-                            ),
-                          );
-                        },
-                      ),
+                                      ),
+                                      tile,
+                                    ],
+                                  )
+                                : tile,
+                          ),
+                        );
+                      },
                     ),
             ),
           ],
@@ -854,6 +882,34 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(width: 8),
+          if (Provider.of<PlaylistProvider>(
+                context,
+                listen: false,
+              ).currentIndex !=
+              null)
+            IconButton(
+              icon: Icon(
+                Icons.track_changes_outlined,
+                color: colorScheme.primary,
+              ),
+              onPressed: () {
+                int? currIndex = Provider.of<PlaylistProvider>(
+                  context,
+                  listen: false,
+                ).currentIndex;
+                log.info('滚动到当前播放歌曲位置, Current index: $currIndex');
+
+                // 滚动到当前播放歌曲
+                if (currIndex != null) {
+                  _itemScrollController.scrollTo(
+                    index: currIndex,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                }
+              },
+            ),
+
           IconButton(
             icon: Icon(Icons.play_arrow_rounded, color: colorScheme.primary),
             tooltip: l10n.groupPlayAll,
@@ -1461,6 +1517,8 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  void _scrollToCurrentTrack(int currIndex) {}
 }
 
 class _DrawerItem extends StatelessWidget {
