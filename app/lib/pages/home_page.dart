@@ -243,245 +243,243 @@ class _HomePageState extends State<HomePage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Drawer(
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              height: 200,
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [colorScheme.primary, colorScheme.primaryContainer],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 200,
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [colorScheme.primary, colorScheme.primaryContainer],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Center(
-                      child: Opacity(
-                        opacity: 0.15, // 透明度
-                        child: Image.asset(
-                          'assets/icon/app_icon.png',
-                          fit: BoxFit.contain,
-                          width: double.infinity, // 宽度铺满
-                          height: double.infinity, // 高度铺满
-                          alignment: Alignment.center,
-                          filterQuality: FilterQuality.high,
-                        ),
+            ),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Center(
+                    child: Opacity(
+                      opacity: 0.15, // 透明度
+                      child: Image.asset(
+                        'assets/icon/app_icon.png',
+                        fit: BoxFit.contain,
+                        width: double.infinity, // 宽度铺满
+                        height: double.infinity, // 高度铺满
+                        alignment: Alignment.center,
+                        filterQuality: FilterQuality.high,
                       ),
                     ),
                   ),
-                  Positioned(
-                    bottom: 0,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 12), // 调整顶部间距
-                        Text(
-                          '广陵',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: colorScheme.onPrimary,
-                          ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 12), // 调整顶部间距
+                      Text(
+                        '广陵',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: colorScheme.onPrimary,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n.drawerSubtitle,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onPrimary.withValues(alpha: 0.8),
-                          ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.drawerSubtitle,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onPrimary.withValues(alpha: 0.8),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                children: [
-                  _DrawerItem(
-                    icon: Icons.library_music,
-                    title: l10n.drawerLocalMusic,
-                    subtitle: l10n.drawerLocalMusicSub,
-                    onTap: () {
-                      Navigator.pop(context);
-                      _startScan();
-                    },
-                  ),
-                  _DrawerItem(
-                    icon: Icons.manage_search,
-                    title: l10n.fullScan,
-                    subtitle: l10n.fullScanSubtitle,
-                    onTap: () {
-                      Navigator.pop(context);
-                      _startFullScan();
-                    },
-                  ),
-                  _DrawerItem(
-                    icon: Icons.folder_open,
-                    title: l10n.drawerCustomPath,
-                    subtitle: l10n.drawerCustomPathSubtitle,
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showCustomPathDialog();
-                    },
-                  ),
-                  _DrawerItem(
-                    icon: Icons.language,
-                    title: l10n.drawerUploadMusic,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/higequ');
-                    },
-                  ),
-                  const Divider(indent: 16, endIndent: 16),
-                  Builder(
-                    builder: (ctx) {
-                      final groupProv = ctx.watch<GroupProvider>();
-                      return Column(
-                        children: [
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: [
+                _DrawerItem(
+                  icon: Icons.library_music,
+                  title: l10n.drawerLocalMusic,
+                  subtitle: l10n.drawerLocalMusicSub,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _startScan();
+                  },
+                ),
+                _DrawerItem(
+                  icon: Icons.manage_search,
+                  title: l10n.fullScan,
+                  subtitle: l10n.fullScanSubtitle,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _startFullScan();
+                  },
+                ),
+                _DrawerItem(
+                  icon: Icons.folder_open,
+                  title: l10n.drawerCustomPath,
+                  subtitle: l10n.drawerCustomPathSubtitle,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showCustomPathDialog();
+                  },
+                ),
+                _DrawerItem(
+                  icon: Icons.language,
+                  title: l10n.drawerUploadMusic,
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/higequ');
+                  },
+                ),
+                const Divider(indent: 16, endIndent: 16),
+                Builder(
+                  builder: (ctx) {
+                    final groupProv = ctx.watch<GroupProvider>();
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.folder,
+                                size: 20,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                l10n.drawerPlaylists,
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const Spacer(),
+                              IconButton(
+                                icon: const Icon(Icons.add, size: 20),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  _showCreateGroupDialog();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (groupProv.groups.isEmpty)
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
-                              vertical: 8,
+                              vertical: 4,
                             ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.folder,
-                                  size: 20,
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  l10n.drawerPlaylists,
-                                  style: theme.textTheme.labelLarge?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                                const Spacer(),
-                                IconButton(
-                                  icon: const Icon(Icons.add, size: 20),
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                    _showCreateGroupDialog();
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (groupProv.groups.isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 4,
+                            child: Text(
+                              l10n.drawerNoPlaylists,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
                               ),
-                              child: Text(
-                                l10n.drawerNoPlaylists,
+                            ),
+                          )
+                        else
+                          ...groupProv.groups.map(
+                            (g) => ListTile(
+                              dense: true,
+                              leading: Icon(Icons.folder_outlined, size: 20),
+                              title: Text(
+                                g.name,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              trailing: Text(
+                                '${g.trackCount}',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                            )
-                          else
-                            ...groupProv.groups.map(
-                              (g) => ListTile(
-                                dense: true,
-                                leading: Icon(Icons.folder_outlined, size: 20),
-                                title: Text(
-                                  g.name,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                                trailing: Text(
-                                  '${g.trackCount}',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                                onTap: () {
-                                  Navigator.pop(ctx);
-                                  context.push('/group/${g.id}');
-                                },
-                                onLongPress: () {
-                                  Navigator.pop(ctx);
-                                  _showRenameDeleteGroupSheet(g);
-                                },
-                              ),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
-                  const Divider(indent: 16, endIndent: 16),
-                  Builder(
-                    builder: (ctx) {
-                      final theme = ctx.watch<ThemeProvider>();
-                      return _DrawerItem(
-                        icon: theme.isDark ? Icons.light_mode : Icons.dark_mode,
-                        title: theme.isDark
-                            ? l10n.drawerLightMode
-                            : l10n.drawerDarkMode,
-                        onTap: () {
-                          Navigator.pop(ctx);
-                          ctx.read<ThemeProvider>().toggle();
-                        },
-                      );
-                    },
-                  ),
-                  _DrawerItem(
-                    icon: Icons.language,
-                    title: l10n.drawerLanguage,
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showLanguageSheet();
-                    },
-                  ),
-                  _DrawerItem(
-                    icon: Icons.waves,
-                    title: l10n.changeAppearance,
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showAppearanceSheet();
-                    },
-                  ),
-                  _DrawerItem(
-                    icon: Icons.info_outline,
-                    title: l10n.drawerAbout,
-                    onTap: () {
-                      Navigator.pop(context);
-                      showAboutDialog(
-                        context: context,
-                        applicationName: '广陵',
-                        applicationVersion: '1.3.0', // 这里同步你最新的版本号
-                        children: [
-                          const Text(
-                            '📝 更新日志',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                context.push('/group/${g.id}');
+                              },
+                              onLongPress: () {
+                                Navigator.pop(ctx);
+                                _showRenameDeleteGroupSheet(g);
+                              },
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          const Text('• 修复国际化翻译遗漏'),
-                          const Text('• 优化主页滚动体验'),
-                          const Text('• 重构安卓原生插件结构，提升可维护性'),
-                          const Text('• 修复安卓删除文件失败的 Bug'),
-                          const SizedBox(height: 8),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
+                      ],
+                    );
+                  },
+                ),
+                const Divider(indent: 16, endIndent: 16),
+                Builder(
+                  builder: (ctx) {
+                    final theme = ctx.watch<ThemeProvider>();
+                    return _DrawerItem(
+                      icon: theme.isDark ? Icons.light_mode : Icons.dark_mode,
+                      title: theme.isDark
+                          ? l10n.drawerLightMode
+                          : l10n.drawerDarkMode,
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        ctx.read<ThemeProvider>().toggle();
+                      },
+                    );
+                  },
+                ),
+                _DrawerItem(
+                  icon: Icons.language,
+                  title: l10n.drawerLanguage,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showLanguageSheet();
+                  },
+                ),
+                _DrawerItem(
+                  icon: Icons.waves,
+                  title: l10n.changeAppearance,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showAppearanceSheet();
+                  },
+                ),
+                _DrawerItem(
+                  icon: Icons.info_outline,
+                  title: l10n.drawerAbout,
+                  onTap: () {
+                    Navigator.pop(context);
+                    showAboutDialog(
+                      context: context,
+                      applicationName: '广陵',
+                      applicationVersion: '1.3.0', // 这里同步你最新的版本号
+                      children: [
+                        const Text(
+                          '📝 更新日志',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text('• 修复国际化翻译遗漏'),
+                        const Text('• 优化主页滚动体验'),
+                        const Text('• 重构安卓原生插件结构，提升可维护性'),
+                        const Text('• 修复安卓删除文件失败的 Bug'),
+                        const SizedBox(height: 8),
+                      ],
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
