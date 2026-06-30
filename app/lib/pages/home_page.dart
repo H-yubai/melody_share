@@ -458,7 +458,22 @@ class _HomePageState extends State<HomePage> {
                       showAboutDialog(
                         context: context,
                         applicationName: '广陵',
-                        applicationVersion: '1.0.0',
+                        applicationVersion: '1.3.0', // 这里同步你最新的版本号
+                        children: [
+                          const Text(
+                            '📝 更新日志',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text('• 修复国际化翻译遗漏'),
+                          const Text('• 优化主页滚动体验'),
+                          const Text('• 重构安卓原生插件结构，提升可维护性'),
+                          const Text('• 修复安卓删除文件失败的 Bug'),
+                          const SizedBox(height: 8),
+                        ],
                       );
                     },
                   ),
