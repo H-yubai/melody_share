@@ -123,10 +123,10 @@ class _HomePageState extends State<HomePage> {
       });
       if (mounted) {
         final msg = customPath != null
-              ? l10n.scanComplete(tracks.length)
-              : isQuick
-              ? l10n.quickScanComplete(tracks.length)
-              : l10n.fullScanComplete(tracks.length);
+            ? l10n.scanComplete(tracks.length)
+            : isQuick
+            ? l10n.quickScanComplete(tracks.length)
+            : l10n.fullScanComplete(tracks.length);
         toastification.show(
           context: context,
           title: Text(msg),
@@ -273,15 +273,15 @@ class _HomePageState extends State<HomePage> {
                       _startScan();
                     },
                   ),
-                   _DrawerItem(
-                     icon: Icons.manage_search,
-                     title: l10n.fullScan,
-                     subtitle: l10n.fullScanSubtitle,
-                     onTap: () {
-                       Navigator.pop(context);
-                       _startFullScan();
-                     },
-                   ),
+                  _DrawerItem(
+                    icon: Icons.manage_search,
+                    title: l10n.fullScan,
+                    subtitle: l10n.fullScanSubtitle,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _startFullScan();
+                    },
+                  ),
                   _DrawerItem(
                     icon: Icons.folder_open,
                     title: '自定义路径',
@@ -403,14 +403,14 @@ class _HomePageState extends State<HomePage> {
                       _showLanguageSheet();
                     },
                   ),
-                   _DrawerItem(
-                     icon: Icons.waves,
-                     title: l10n.changeAppearance,
-                     onTap: () {
-                       Navigator.pop(context);
-                       _showAppearanceSheet();
-                     },
-                   ),
+                  _DrawerItem(
+                    icon: Icons.waves,
+                    title: l10n.changeAppearance,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showAppearanceSheet();
+                    },
+                  ),
                   _DrawerItem(
                     icon: Icons.info_outline,
                     title: l10n.drawerAbout,
@@ -773,12 +773,21 @@ class _HomePageState extends State<HomePage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
       child: TextField(
+        autofocus: false,
+        onTapUpOutside: (event) => FocusScope.of(context).unfocus(),
         controller: _searchController,
         decoration: InputDecoration(
           hintText: '搜索',
           prefixIcon: const Icon(Icons.search),
           border: const OutlineInputBorder(),
           isDense: true,
+          suffixIcon: IconButton(
+            icon: const Icon(Icons.clear),
+            onPressed: () => setState(() {
+              _searchController.clear();
+              _searchQuery = '';
+            }),
+          ),
           contentPadding: const EdgeInsets.symmetric(
             vertical: 10,
             horizontal: 12,
@@ -1395,13 +1404,13 @@ class _HomePageState extends State<HomePage> {
 
     showDialog(
       context: context,
-       builder: (ctx) => StatefulBuilder(
-         builder: (ctx, setDialogState) => AlertDialog(
-           title: Text(l10n.scanCustomDirectory),
-           content: Column(
-             mainAxisSize: MainAxisSize.min,
-             children: [
-               Text(l10n.enterDirectoryPath),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(l10n.scanCustomDirectory),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l10n.enterDirectoryPath),
               const SizedBox(height: 12),
               TextField(
                 controller: controller,
